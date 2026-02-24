@@ -1,9 +1,8 @@
 """
 Claude AI Service for Ayumi - Walking with God
-Using user's Claude API key with Emergent as backup
+Using Emergent LLM Key (Option B)
 """
 from emergentintegrations.llm.chat import LlmChat, UserMessage
-import anthropic
 import json
 from typing import Dict, List, Any, Optional
 import os
@@ -11,26 +10,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-USER_CLAUDE_KEY = os.getenv('CLAUDE_API_KEY', '')
-EMERGENT_LLM_KEY = os.getenv('EMERGENT_LLM_KEY', '')
+EMERGENT_LLM_KEY = os.getenv('EMERGENT_LLM_KEY', 'sk-emergent-b2cA3430e448e7321C')
 
-# Try user's key first, fallback to Emergent
-USE_EMERGENT = not USER_CLAUDE_KEY or len(USER_CLAUDE_KEY) < 20
+print(f"✓ Using Emergent LLM key for Claude Sonnet")
 
-if USE_EMERGENT:
-    print("Using Emergent LLM key for Claude")
-    def get_chat_client(session_id: str = "ayumi-default") -> LlmChat:
-        """Get configured LlmChat client using Emergent"""
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=session_id,
-            system_message="You are a theologically sound Bible assistant. Provide accurate, evangelical, gospel-centered content."
-        )
-        chat.with_model("anthropic", "claude-4-sonnet-20250514")
-        return chat
-else:
-    print(f"Using user's Claude API key: {USER_CLAUDE_KEY[:20]}...")
-    anthropic_client = anthropic.Anthropic(api_key=USER_CLAUDE_KEY)
+def get_chat_client(session_id: str = "ayumi-default") -> LlmChat:
+    """Get configured LlmChat client using Emergent"""
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=session_id,
+        system_message="You are a theologically sound Bible assistant. Provide accurate, evangelical, gospel-centered content."
+    )
+    chat.with_model("anthropic", "claude-4-sonnet-20250514")
+    return chat
 
 
 FALLBACK_HOME_DASHBOARD = {
