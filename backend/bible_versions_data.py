@@ -233,4 +233,3 @@ def get_available_languages():
     {"id": "douay", "name": "Douay-Rheims", "abbreviation": "DRA", "language": "English", "language_code": "en", "year": 1899, "translation_type": "formal"},
     {"id": "wycliffe", "name": "Wycliffe Bible", "abbreviation": "WYC", "language": "English", "language_code": "en", "year": 1395, "translation_type": "formal"},
     {"id": "tyndale", "name": "Tyndale Bible", "abbreviation": "TYN", "language": "English", "language_code": "en", "year": 1530, "translation_type": "formal"},
-]
