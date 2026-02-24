@@ -222,18 +222,18 @@ async def get_bible_chapter(book: str, chapter: int, version: str = "ESV") -> Li
     try:
         prompt = f"""Provide the complete text of {book} chapter {chapter} in {version} translation.
 
-Return a JSON array where each object represents one verse:
+Return a JSON array where each object represents one verse with this EXACT format:
 [
-  {{
-    "book": "{book}",
-    "chapter": {chapter},
-    "verse": 1,
-    "text": "exact verse text"
-  }},
+  {{"book": "{book}", "chapter": {chapter}, "verse": 1, "text": "exact verse text"}},
+  {{"book": "{book}", "chapter": {chapter}, "verse": 2, "text": "exact verse text"}},
   ...
 ]
 
-Provide ALL verses in the chapter with exact biblical text."""
+IMPORTANT: 
+- Provide ALL verses in the chapter
+- Use exact biblical text from {version}
+- Each verse must be a separate object in the array
+- Return ONLY the JSON array, nothing else"""
 
         message = client.messages.create(
             model="claude-sonnet-4-20250514",
@@ -241,10 +241,17 @@ Provide ALL verses in the chapter with exact biblical text."""
             messages=[{"role": "user", "content": prompt}]
         )
         
-        return json.loads(message.content[0].text)
+        content_text = message.content[0].text
+        print(f"Claude response for {book} {chapter}: {content_text[:200]}...")
+        
+        verses = json.loads(content_text)
+        print(f"Parsed {len(verses)} verses")
+        return verses
         
     except Exception as e:
         print(f"Bible chapter fetch error: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 
