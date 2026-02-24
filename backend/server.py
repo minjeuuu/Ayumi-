@@ -608,3 +608,47 @@ logger = logging.getLogger(__name__)
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+
+# ==========================
+# SERVE VITE STATIC FILES
+# ==========================
+DIST_DIR = ROOT_DIR / "dist"
+
+# Serve static assets (JS, CSS, images)
+if DIST_DIR.exists():
+    app.mount("/assets", StaticFiles(directory=str(DIST_DIR / "assets")), name="static-assets")
+
+    # Serve index.css from dist root
+    @app.get("/index.css")
+    async def serve_index_css():
+        css_file = DIST_DIR / "index.css"
+        if css_file.exists():
+            return FileResponse(str(css_file), media_type="text/css")
+        # Fallback to assets
+        css_file2 = DIST_DIR / "assets" / "index.css"
+        if css_file2.exists():
+            return FileResponse(str(css_file2), media_type="text/css")
+        return Response(content="", media_type="text/css")
+
+    # Catch-all: serve index.html for SPA routing
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        # Don't serve for API routes
+        if full_path.startswith("api"):
+            raise HTTPException(status_code=404, detail="Not found")
+        
+        # Try to serve as a static file first
+        file_path = DIST_DIR / full_path
+        if file_path.is_file():
+            return FileResponse(str(file_path))
+        
+        # Otherwise serve index.html for SPA routing
+        index_file = DIST_DIR / "index.html"
+        if index_file.exists():
+            return FileResponse(
+                str(index_file), 
+                media_type="text/html",
+                headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+            )
+        raise HTTPException(status_code=404, detail="Not found")
