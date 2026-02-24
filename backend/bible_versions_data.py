@@ -234,7 +234,6 @@ def get_available_languages():
     {"id": "wycliffe", "name": "Wycliffe Bible", "abbreviation": "WYC", "language": "English", "language_code": "en", "year": 1395, "translation_type": "formal"},
     {"id": "tyndale", "name": "Tyndale Bible", "abbreviation": "TYN", "language": "English", "language_code": "en", "year": 1530, "translation_type": "formal"},
     {"id": "tok-pisin", "name": "Tok Pisin Bible", "abbreviation": "TOK", "language": "Tok Pisin", "language_code": "tpi", "year": 1989, "translation_type": "formal"},
-]
 
 def get_all_versions():
     return BIBLE_VERSIONS
