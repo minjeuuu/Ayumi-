@@ -91,6 +91,8 @@ FALLBACK_HOME_DASHBOARD = {
 async def generate_home_dashboard() -> Dict[str, Any]:
     """Generate comprehensive daily dashboard content"""
     try:
+        chat = get_chat_client(session_id="dashboard")
+        
         prompt = """Generate a comprehensive daily devotional dashboard for 'Ayumi - Walking with God'.
 
 Requirements:
@@ -112,18 +114,9 @@ Return a JSON object with this structure (return ONLY the JSON):
   "history": {"event": "event", "reference": "ref", "description": "desc", "timeline": {"before": "b", "during": "d", "after": "a"}}
 }"""
 
-        if USE_EMERGENT:
-            chat = get_chat_client(session_id="dashboard")
-            message = UserMessage(text=prompt)
-            response = await chat.send_message(message)
-            dashboard_data = json.loads(response)
-        else:
-            message = anthropic_client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=4096,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            dashboard_data = json.loads(message.content[0].text)
+        message = UserMessage(text=prompt)
+        response = await chat.send_message(message)
+        dashboard_data = json.loads(response)
         
         from datetime import datetime
         dashboard_data['date'] = datetime.utcnow().isoformat()
@@ -139,24 +132,16 @@ Return a JSON object with this structure (return ONLY the JSON):
 async def generate_devotional(topic: Optional[str] = None) -> Dict[str, Any]:
     """Generate devotional content"""
     try:
+        chat = get_chat_client(session_id="devotional")
         topic_text = f" on {topic}" if topic else ""
         prompt = f"""Generate deep devotional content{topic_text}.
 
 Return JSON:
 {{"title": "title", "scripture": {{"text": "text", "reference": "ref"}}, "reflection": "reflection", "prayer": "prayer", "stepOfFaith": "step", "tags": ["tag1"]}}"""
 
-        if USE_EMERGENT:
-            chat = get_chat_client(session_id="devotional")
-            message = UserMessage(text=prompt)
-            response = await chat.send_message(message)
-            return json.loads(response)
-        else:
-            message = anthropic_client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=2048,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            return json.loads(message.content[0].text)
+        message = UserMessage(text=prompt)
+        response = await chat.send_message(message)
+        return json.loads(response)
         
     except Exception as e:
         print(f"Devotional error: {e}")
@@ -173,6 +158,7 @@ Return JSON:
 async def get_bible_chapter(book: str, chapter: int, version: str = "ESV") -> List[Dict[str, Any]]:
     """Get full Bible chapter"""
     try:
+        chat = get_chat_client(session_id=f"bible-{book}-{chapter}")
         prompt = f"""Provide {book} chapter {chapter} in {version}.
 
 Return JSON array (ONLY the array):
@@ -180,20 +166,9 @@ Return JSON array (ONLY the array):
 
 Include ALL verses with exact biblical text."""
 
-        if USE_EMERGENT:
-            chat = get_chat_client(session_id=f"bible-{book}-{chapter}")
-            message = UserMessage(text=prompt)
-            response = await chat.send_message(message)
-            return json.loads(response)
-        else:
-            message = anthropic_client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=4096,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            content = message.content[0].text
-            print(f"Got response for {book} {chapter}: {len(content)} chars")
-            return json.loads(content)
+        message = UserMessage(text=prompt)
+        response = await chat.send_message(message)
+        return json.loads(response)
         
     except Exception as e:
         print(f"Bible chapter error: {e}")
@@ -205,23 +180,15 @@ Include ALL verses with exact biblical text."""
 async def get_chapter_context(book: str, chapter: int) -> Optional[Dict[str, Any]]:
     """Get chapter context"""
     try:
+        chat = get_chat_client(session_id=f"context-{book}-{chapter}")
         prompt = f"""Context for {book} chapter {chapter}.
 
 Return JSON:
 {{"reference":"{book} {chapter}","outline":["point1"],"author":"author","historicalSetting":"setting","purpose":"purpose","crossReferences":["ref1"]}}"""
 
-        if USE_EMERGENT:
-            chat = get_chat_client(session_id=f"context-{book}-{chapter}")
-            message = UserMessage(text=prompt)
-            response = await chat.send_message(message)
-            return json.loads(response)
-        else:
-            message = anthropic_client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=1024,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            return json.loads(message.content[0].text)
+        message = UserMessage(text=prompt)
+        response = await chat.send_message(message)
+        return json.loads(response)
         
     except Exception as e:
         print(f"Context error: {e}")
@@ -231,21 +198,13 @@ Return JSON:
 async def generate_prayer_prompts(verse: str) -> List[str]:
     """Generate prayer prompts"""
     try:
+        chat = get_chat_client(session_id="prayer-prompts")
         prompt = f"""Based on "{verse}", generate 3 prayer prompts.
 Return JSON array: ["prompt1","prompt2","prompt3"]"""
 
-        if USE_EMERGENT:
-            chat = get_chat_client(session_id="prayer-prompts")
-            message = UserMessage(text=prompt)
-            response = await chat.send_message(message)
-            return json.loads(response)
-        else:
-            message = anthropic_client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=256,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            return json.loads(message.content[0].text)
+        message = UserMessage(text=prompt)
+        response = await chat.send_message(message)
+        return json.loads(response)
         
     except Exception as e:
         return ["Lord, help me apply this truth.", "Thank You for Your Word.", "Give me faith to live this out."]
@@ -254,20 +213,12 @@ Return JSON array: ["prompt1","prompt2","prompt3"]"""
 async def generate_prayer(prayer_type: str) -> str:
     """Generate prayer"""
     try:
+        chat = get_chat_client(session_id="prayer-gen")
         prompt = f"Write a short {prayer_type} prayer (2-3 sentences)."
 
-        if USE_EMERGENT:
-            chat = get_chat_client(session_id="prayer-gen")
-            message = UserMessage(text=prompt)
-            response = await chat.send_message(message)
-            return response
-        else:
-            message = anthropic_client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=256,
-                messages=[{"role": "user", "content": prompt}]
-            )
-            return message.content[0].text
+        message = UserMessage(text=prompt)
+        response = await chat.send_message(message)
+        return response
         
     except Exception as e:
         return "Lord, teach us to pray. Help us seek Your face. Amen."
