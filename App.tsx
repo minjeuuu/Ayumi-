@@ -74,6 +74,7 @@ const App: React.FC = () => {
         } : null} />;
       case Tab.PRAYER: return <PrayerTab />;
       case Tab.JOURNAL: return <JournalTab />;
+      case Tab.WORSHIP: return <WorshipMusicTab />;
       case Tab.STUDY: return <StudyTab />;
       case Tab.PLANS: return <PlansTab />;
       case Tab.TOPICS: return <TopicsTab />;
