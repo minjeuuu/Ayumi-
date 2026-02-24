@@ -1,8 +1,9 @@
 """
 Claude AI Service for Ayumi - Walking with God
-Using Emergent Integrations for Claude Sonnet
+Using user's Claude API key with Emergent as backup
 """
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+import anthropic
 import json
 from typing import Dict, List, Any, Optional
 import os
@@ -10,17 +11,27 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-EMERGENT_LLM_KEY = os.getenv('EMERGENT_LLM_KEY', 'sk-emergent-b2cA3430e448e7321C')
+USER_CLAUDE_KEY = os.getenv('CLAUDE_API_KEY', '')
+EMERGENT_LLM_KEY = os.getenv('EMERGENT_LLM_KEY', '')
 
-def get_chat_client(session_id: str = "ayumi-default") -> LlmChat:
-    """Get configured LlmChat client"""
-    chat = LlmChat(
-        api_key=EMERGENT_LLM_KEY,
-        session_id=session_id,
-        system_message="You are a theologically sound Bible assistant for Ayumi app. Provide accurate, evangelical, gospel-centered content."
-    )
-    chat.with_model("anthropic", "claude-4-sonnet-20250514")
-    return chat
+# Try user's key first, fallback to Emergent
+USE_EMERGENT = not USER_CLAUDE_KEY or len(USER_CLAUDE_KEY) < 20
+
+if USE_EMERGENT:
+    print("Using Emergent LLM key for Claude")
+    def get_chat_client(session_id: str = "ayumi-default") -> LlmChat:
+        """Get configured LlmChat client using Emergent"""
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=session_id,
+            system_message="You are a theologically sound Bible assistant. Provide accurate, evangelical, gospel-centered content."
+        )
+        chat.with_model("anthropic", "claude-4-sonnet-20250514")
+        return chat
+else:
+    print(f"Using user's Claude API key: {USER_CLAUDE_KEY[:20]}...")
+    anthropic_client = anthropic.Anthropic(api_key=USER_CLAUDE_KEY)
+
 
 FALLBACK_HOME_DASHBOARD = {
     "date": "",
@@ -86,246 +97,185 @@ FALLBACK_HOME_DASHBOARD = {
 
 
 async def generate_home_dashboard() -> Dict[str, Any]:
-    """Generate comprehensive daily dashboard content using Claude"""
+    """Generate comprehensive daily dashboard content"""
     try:
-        chat = get_chat_client(session_id="dashboard")
-        
-        prompt = """Generate a comprehensive daily devotional dashboard for 'Ayumi - Walking with God', a serious Christian discipleship app.
+        prompt = """Generate a comprehensive daily devotional dashboard for 'Ayumi - Walking with God'.
 
 Requirements:
-- Use English Standard Version (ESV) for all scripture
-- Theology: Evangelical, Born-Again, Scripture-First, Gospel-Centered
-- Provide rich, deep content suitable for serious believers
-- All verses must be accurate and verifiable
+- Use English Standard Version (ESV) for scripture
+- Theology: Evangelical, Born-Again, Gospel-Centered
+- All verses must be accurate
 
-Return a JSON object with this exact structure:
+Return a JSON object with this structure (return ONLY the JSON):
 {
-  "date": "current date as ISO string",
-  "verse": {
-    "text": "full verse text",
-    "reference": "book chapter:verse",
-    "context": "brief context of the passage",
-    "crossReferences": ["reference1", "reference2"],
-    "gospelConnection": "how this verse points to the gospel"
-  },
-  "passage": {
-    "reference": "longer passage reference",
-    "text": "multiple verses, paragraph form",
-    "outline": ["main point 1", "main point 2", "main point 3"],
-    "author": "biblical author",
-    "historicalSetting": "brief historical context"
-  },
-  "devotional": {
-    "title": "devotional title",
-    "scriptureQuote": "main verse with reference",
-    "shortReflection": "1-2 sentence summary",
-    "longReflection": "3-4 paragraph deep reflection",
-    "application": "practical application point",
-    "prayerGuide": "guided prayer based on the text"
-  },
-  "questions": {
-    "heartCheck": "question about heart condition",
-    "beliefCheck": "question about faith and trust",
-    "obedienceCheck": "question about practical obedience"
-  },
-  "prayer": {
-    "focusTheme": "prayer theme for the day",
-    "scripture": "verse to pray through",
-    "guidedPrayer": "sample prayer"
-  },
-  "theme": {
-    "theme": "theological theme",
-    "keyVerse": "main verse for theme",
-    "supportingVerses": ["verse1", "verse2", "verse3"]
-  },
-  "attribute": {
-    "attribute": "an attribute of God",
-    "definition": "clear definition",
-    "scriptureProof": "verse proving this attribute",
-    "worshipResponse": "sample worship response"
-  },
-  "gospel": {
-    "truth": "core gospel truth",
-    "reference": "scripture reference",
-    "explanation": "clear explanation"
-  },
-  "history": {
-    "event": "biblical event",
-    "reference": "scripture reference",
-    "description": "event description",
-    "timeline": {
-      "before": "what led to this event",
-      "during": "what happened",
-      "after": "the result/impact"
-    }
-  }
-}
+  "date": "2026-02-24T19:00:00.000Z",
+  "verse": {"text": "verse text", "reference": "reference", "context": "context", "crossReferences": ["ref1"], "gospelConnection": "connection"},
+  "passage": {"reference": "ref", "text": "text", "outline": ["point1"], "author": "author", "historicalSetting": "setting"},
+  "devotional": {"title": "title", "scriptureQuote": "quote", "shortReflection": "short", "longReflection": "long", "application": "app", "prayerGuide": "prayer"},
+  "questions": {"heartCheck": "q1", "beliefCheck": "q2", "obedienceCheck": "q3"},
+  "prayer": {"focusTheme": "theme", "scripture": "verse", "guidedPrayer": "prayer"},
+  "theme": {"theme": "theme", "keyVerse": "verse", "supportingVerses": ["v1"]},
+  "attribute": {"attribute": "attr", "definition": "def", "scriptureProof": "proof", "worshipResponse": "response"},
+  "gospel": {"truth": "truth", "reference": "ref", "explanation": "exp"},
+  "history": {"event": "event", "reference": "ref", "description": "desc", "timeline": {"before": "b", "during": "d", "after": "a"}}
+}"""
 
-Return ONLY the JSON object."""
-
-        message = UserMessage(text=prompt)
-        response = await chat.send_message(message)
-        
-        dashboard_data = json.loads(response)
+        if USE_EMERGENT:
+            chat = get_chat_client(session_id="dashboard")
+            message = UserMessage(text=prompt)
+            response = await chat.send_message(message)
+            dashboard_data = json.loads(response)
+        else:
+            message = anthropic_client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=4096,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            dashboard_data = json.loads(message.content[0].text)
         
         from datetime import datetime
         dashboard_data['date'] = datetime.utcnow().isoformat()
-        
         return dashboard_data
         
     except Exception as e:
-        print(f"Claude dashboard generation error: {e}")
+        print(f"Dashboard error: {e}")
         from datetime import datetime
         FALLBACK_HOME_DASHBOARD['date'] = datetime.utcnow().isoformat()
         return FALLBACK_HOME_DASHBOARD
 
 
 async def generate_devotional(topic: Optional[str] = None) -> Dict[str, Any]:
-    """Generate a devotional on a specific topic"""
+    """Generate devotional content"""
     try:
-        topic_text = f" focused on the topic of {topic}" if topic else ""
-        
-        prompt = f"""Generate a deep devotional content{topic_text} for a Christian discipleship app.
+        topic_text = f" on {topic}" if topic else ""
+        prompt = f"""Generate deep devotional content{topic_text}.
 
-Return JSON with this structure:
-{{
-  "title": "devotional title",
-  "scripture": {{
-    "text": "main verse text (ESV)",
-    "reference": "verse reference"
-  }},
-  "reflection": "3-4 paragraphs of deep theological reflection",
-  "prayer": "guided prayer",
-  "stepOfFaith": "practical application step",
-  "tags": ["tag1", "tag2", "tag3"]
-}}"""
+Return JSON:
+{{"title": "title", "scripture": {{"text": "text", "reference": "ref"}}, "reflection": "reflection", "prayer": "prayer", "stepOfFaith": "step", "tags": ["tag1"]}}"""
 
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=2048,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        
-        return json.loads(message.content[0].text)
+        if USE_EMERGENT:
+            chat = get_chat_client(session_id="devotional")
+            message = UserMessage(text=prompt)
+            response = await chat.send_message(message)
+            return json.loads(response)
+        else:
+            message = anthropic_client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=2048,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return json.loads(message.content[0].text)
         
     except Exception as e:
-        print(f"Devotional generation error: {e}")
+        print(f"Devotional error: {e}")
         return {
             "title": "Walking by Faith",
-            "scripture": {
-                "text": "For we walk by faith, not by sight.",
-                "reference": "2 Corinthians 5:7"
-            },
+            "scripture": {"text": "For we walk by faith, not by sight.", "reference": "2 Corinthians 5:7"},
             "reflection": "Faith is the foundation of our walk with God...",
             "prayer": "Lord, increase my faith today.",
             "stepOfFaith": "Trust God with one specific concern today.",
-            "tags": ["faith", "trust", "walk"]
+            "tags": ["faith", "trust"]
         }
 
 
 async def get_bible_chapter(book: str, chapter: int, version: str = "ESV") -> List[Dict[str, Any]]:
-    """Get a full Bible chapter"""
+    """Get full Bible chapter"""
     try:
-        prompt = f"""Provide the complete text of {book} chapter {chapter} in {version} translation.
+        prompt = f"""Provide {book} chapter {chapter} in {version}.
 
-Return a JSON array where each object represents one verse with this EXACT format:
-[
-  {{"book": "{book}", "chapter": {chapter}, "verse": 1, "text": "exact verse text"}},
-  {{"book": "{book}", "chapter": {chapter}, "verse": 2, "text": "exact verse text"}},
-  ...
-]
+Return JSON array (ONLY the array):
+[{{"book":"{book}","chapter":{chapter},"verse":1,"text":"verse text"}},{{"book":"{book}","chapter":{chapter},"verse":2,"text":"verse text"}}]
 
-IMPORTANT: 
-- Provide ALL verses in the chapter
-- Use exact biblical text from {version}
-- Each verse must be a separate object in the array
-- Return ONLY the JSON array, nothing else"""
+Include ALL verses with exact biblical text."""
 
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=4096,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        
-        content_text = message.content[0].text
-        print(f"Claude response for {book} {chapter}: {content_text[:200]}...")
-        
-        verses = json.loads(content_text)
-        print(f"Parsed {len(verses)} verses")
-        return verses
+        if USE_EMERGENT:
+            chat = get_chat_client(session_id=f"bible-{book}-{chapter}")
+            message = UserMessage(text=prompt)
+            response = await chat.send_message(message)
+            return json.loads(response)
+        else:
+            message = anthropic_client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=4096,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            content = message.content[0].text
+            print(f"Got response for {book} {chapter}: {len(content)} chars")
+            return json.loads(content)
         
     except Exception as e:
-        print(f"Bible chapter fetch error: {e}")
+        print(f"Bible chapter error: {e}")
         import traceback
         traceback.print_exc()
         return []
 
 
 async def get_chapter_context(book: str, chapter: int) -> Optional[Dict[str, Any]]:
-    """Get contextual information about a Bible chapter"""
+    """Get chapter context"""
     try:
-        prompt = f"""Provide deep scholarly context for {book} chapter {chapter}.
+        prompt = f"""Context for {book} chapter {chapter}.
 
-Return JSON with this structure:
-{{
-  "reference": "{book} {chapter}",
-  "outline": ["main section 1", "main section 2", "main section 3"],
-  "author": "biblical author",
-  "historicalSetting": "historical context",
-  "purpose": "purpose of this passage",
-  "crossReferences": ["related passage 1", "related passage 2"]
-}}"""
+Return JSON:
+{{"reference":"{book} {chapter}","outline":["point1"],"author":"author","historicalSetting":"setting","purpose":"purpose","crossReferences":["ref1"]}}"""
 
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        
-        return json.loads(message.content[0].text)
+        if USE_EMERGENT:
+            chat = get_chat_client(session_id=f"context-{book}-{chapter}")
+            message = UserMessage(text=prompt)
+            response = await chat.send_message(message)
+            return json.loads(response)
+        else:
+            message = anthropic_client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=1024,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return json.loads(message.content[0].text)
         
     except Exception as e:
-        print(f"Context fetch error: {e}")
+        print(f"Context error: {e}")
         return None
 
 
 async def generate_prayer_prompts(verse: str) -> List[str]:
-    """Generate prayer prompts based on a verse"""
+    """Generate prayer prompts"""
     try:
-        prompt = f"""Based on this Bible verse: "{verse}"
+        prompt = f"""Based on "{verse}", generate 3 prayer prompts.
+Return JSON array: ["prompt1","prompt2","prompt3"]"""
 
-Generate 3 short, personal prayer prompts (each 10-20 words) that help someone pray through this verse.
-
-Return as JSON array: ["prompt1", "prompt2", "prompt3"]"""
-
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=256,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        
-        return json.loads(message.content[0].text)
+        if USE_EMERGENT:
+            chat = get_chat_client(session_id="prayer-prompts")
+            message = UserMessage(text=prompt)
+            response = await chat.send_message(message)
+            return json.loads(response)
+        else:
+            message = anthropic_client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=256,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return json.loads(message.content[0].text)
         
     except Exception as e:
-        return [
-            "Lord, help me understand and apply this truth today.",
-            "Thank You, Father, for speaking to me through Your Word.",
-            "Give me faith to live out what I'm learning here."
-        ]
+        return ["Lord, help me apply this truth.", "Thank You for Your Word.", "Give me faith to live this out."]
 
 
 async def generate_prayer(prayer_type: str) -> str:
-    """Generate a prayer of specific type"""
+    """Generate prayer"""
     try:
-        prompt = f"Write a short, heartfelt {prayer_type} prayer (2-3 sentences) that a believer could pray."
-        
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=256,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        
-        return message.content[0].text
+        prompt = f"Write a short {prayer_type} prayer (2-3 sentences)."
+
+        if USE_EMERGENT:
+            chat = get_chat_client(session_id="prayer-gen")
+            message = UserMessage(text=prompt)
+            response = await chat.send_message(message)
+            return response
+        else:
+            message = anthropic_client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=256,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return message.content[0].text
         
     except Exception as e:
-        return "Lord, teach us to pray. Help us to seek Your face and trust Your heart. Amen."
+        return "Lord, teach us to pray. Help us seek Your face. Amen."
