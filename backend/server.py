@@ -359,6 +359,36 @@ async def update_settings(user_id: str, settings: Dict[str, Any] = Body(...)):
     return {"message": "Settings updated", "settings": settings}
 
 
+# ==========================
+# WORSHIP MUSIC ENDPOINTS
+# ==========================
+
+@api_router.get("/worship/artists")
+async def get_worship_artists():
+    """Get all worship artists"""
+    return {"artists": get_all_artists()}
+
+
+@api_router.get("/worship/songs")
+async def get_worship_songs():
+    """Get all worship songs"""
+    return {"songs": get_all_songs()}
+
+
+@api_router.get("/worship/search/{query}")
+async def search_worship_songs(query: str):
+    """Search worship songs"""
+    results = search_songs(query)
+    return {"query": query, "results": results}
+
+
+@api_router.get("/worship/artist/{artist_id}/songs")
+async def get_songs_by_artist(artist_id: str):
+    """Get songs by specific artist"""
+    songs = get_artist_songs(artist_id)
+    return {"artist_id": artist_id, "songs": songs}
+
+
 # Legacy endpoints
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
