@@ -233,3 +233,27 @@ def get_available_languages():
     {"id": "douay", "name": "Douay-Rheims", "abbreviation": "DRA", "language": "English", "language_code": "en", "year": 1899, "translation_type": "formal"},
     {"id": "wycliffe", "name": "Wycliffe Bible", "abbreviation": "WYC", "language": "English", "language_code": "en", "year": 1395, "translation_type": "formal"},
     {"id": "tyndale", "name": "Tyndale Bible", "abbreviation": "TYN", "language": "English", "language_code": "en", "year": 1530, "translation_type": "formal"},
+]
+
+def get_all_versions():
+    """Get all Bible versions"""
+    return BIBLE_VERSIONS
+
+def get_versions_by_language(language_code: str):
+    """Get Bible versions for a specific language"""
+    return [v for v in BIBLE_VERSIONS if v["language_code"] == language_code]
+
+def get_version_by_id(version_id: str):
+    """Get a specific Bible version by ID"""
+    for v in BIBLE_VERSIONS:
+        if v["id"] == version_id:
+            return v
+    return None
+
+def get_available_languages():
+    """Get list of available languages"""
+    languages = {}
+    for v in BIBLE_VERSIONS:
+        if v["language_code"] not in languages:
+            languages[v["language_code"]] = v["language"]
+    return languages
