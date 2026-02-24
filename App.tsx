@@ -11,6 +11,7 @@ import ReadTab from './components/views/ReadTab';
 import DevotionalTab from './components/views/DevotionalTab';
 import PrayerTab from './components/views/PrayerTab';
 import JournalTab from './components/views/JournalTab';
+import WorshipMusicTab from './components/views/WorshipMusicTab';
 import { StudyTab, PlansTab, TopicsTab, SavedTab } from './components/views/LibraryTabs';
 import { SearchTab, ProfileTab, SettingsTab } from './components/views/SystemTabs';
 
