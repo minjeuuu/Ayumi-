@@ -389,6 +389,102 @@ async def get_songs_by_artist(artist_id: str):
     return {"artist_id": artist_id, "songs": songs}
 
 
+# ==========================
+# JOURNAL ENDPOINTS
+# ==========================
+
+class JournalEntryCreate(BaseModel):
+    id: str
+    date: str
+    title: str
+    text: str
+    tags: List[str] = []
+    linkedScripture: Optional[str] = None
+    mood: Optional[str] = None
+
+
+@api_router.get("/journal/entries")
+async def get_journal_entries():
+    """Get all journal entries"""
+    entries = await db.journal_entries.find().sort("date", -1).to_list(500)
+    for e in entries:
+        e.pop('_id', None)
+    return {"entries": entries}
+
+
+@api_router.post("/journal/entries")
+async def save_journal_entry(entry: JournalEntryCreate):
+    """Create or update a journal entry"""
+    entry_dict = entry.dict()
+    await db.journal_entries.update_one(
+        {"id": entry.id},
+        {"$set": entry_dict},
+        upsert=True
+    )
+    return {"message": "Entry saved", "entry": entry_dict}
+
+
+@api_router.delete("/journal/entries/{entry_id}")
+async def delete_journal_entry(entry_id: str):
+    """Delete a journal entry"""
+    result = await db.journal_entries.delete_one({"id": entry_id})
+    return {"message": "Entry deleted", "deleted": result.deleted_count > 0}
+
+
+# ==========================
+# BIBLE SEARCH ENDPOINT
+# ==========================
+
+@api_router.get("/bible/search/{query}")
+async def search_bible(query: str):
+    """Search for Bible content"""
+    try:
+        from claude_service import get_chat_client
+        from emergentintegrations.llm.chat import UserMessage
+        import json
+
+        chat = get_chat_client(session_id=f"search-{query[:20]}")
+        prompt = f"""Find 5 Bible verses related to "{query}". Return JSON array:
+[{{"text":"verse text","reference":"Book Chapter:Verse","relevance":"why relevant"}}]
+Return ONLY the JSON array."""
+
+        message = UserMessage(text=prompt)
+        response = await chat.send_message(message)
+        results = json.loads(response)
+        return {"query": query, "results": results}
+    except Exception as e:
+        logging.error(f"Bible search error: {e}")
+        # Fallback results
+        return {"query": query, "results": [
+            {"text": "For God so loved the world...", "reference": "John 3:16", "relevance": "Universal love"},
+            {"text": "I can do all things through Christ...", "reference": "Philippians 4:13", "relevance": "Strength in Christ"},
+        ]}
+
+
+# ==========================
+# VERSE IMAGE DATA ENDPOINT
+# ==========================
+
+@api_router.get("/verse-image/backgrounds")
+async def get_verse_backgrounds():
+    """Get background options for verse images"""
+    backgrounds = [
+        {"id": "sunset", "name": "Golden Sunset", "gradient": "linear-gradient(135deg, #f6d365 0%, #fda085 100%)"},
+        {"id": "ocean", "name": "Ocean Depths", "gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"},
+        {"id": "forest", "name": "Forest Morning", "gradient": "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)"},
+        {"id": "night", "name": "Starry Night", "gradient": "linear-gradient(135deg, #0c0c1d 0%, #1a1a3e 50%, #2d2d6e 100%)"},
+        {"id": "rose", "name": "Rose Garden", "gradient": "linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%)"},
+        {"id": "dawn", "name": "Morning Dawn", "gradient": "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)"},
+        {"id": "mountain", "name": "Mountain Peak", "gradient": "linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%)"},
+        {"id": "warmth", "name": "Warm Embrace", "gradient": "linear-gradient(135deg, #fa709a 0%, #fee140 100%)"},
+        {"id": "sage", "name": "Peaceful Sage", "gradient": "linear-gradient(135deg, #5B7C75 0%, #8fb8a8 100%)"},
+        {"id": "earth", "name": "Earth Tones", "gradient": "linear-gradient(135deg, #8B6914 0%, #D4A843 50%, #E8C86A 100%)"},
+        {"id": "midnight", "name": "Midnight Blue", "gradient": "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)"},
+        {"id": "pure", "name": "Pure White", "gradient": "linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)"},
+    ];
+    return {"backgrounds": backgrounds}
+
+
 # Legacy endpoints
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
