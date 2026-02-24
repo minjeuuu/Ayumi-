@@ -174,3 +174,63 @@ def get_available_languages():
         if v["language_code"] not in languages:
             languages[v["language_code"]] = v["language"]
     return languages
+
+    {"id": "zul", "name": "Zulu Bible", "abbreviation": "ZUL", "language": "Zulu", "language_code": "zu", "year": 1959, "translation_type": "formal"},
+    {"id": "xho", "name": "Xhosa Bible", "abbreviation": "XHO", "language": "Xhosa", "language_code": "xh", "year": 1975, "translation_type": "formal"},
+    {"id": "sot", "name": "Sotho Bible", "abbreviation": "SOT", "language": "Sotho", "language_code": "st", "year": 1989, "translation_type": "formal"},
+    {"id": "tsn", "name": "Tswana Bible", "abbreviation": "TSN", "language": "Tswana", "language_code": "tn", "year": 1970, "translation_type": "formal"},
+    
+    {"id": "mya", "name": "Myanmar Bible", "abbreviation": "MYA", "language": "Burmese", "language_code": "my", "year": 1835, "translation_type": "formal"},
+    {"id": "khm", "name": "Khmer Bible", "abbreviation": "KHM", "language": "Khmer", "language_code": "km", "year": 1954, "translation_type": "formal"},
+    {"id": "lao", "name": "Lao Bible", "abbreviation": "LAO", "language": "Lao", "language_code": "lo", "year": 1932, "translation_type": "formal"},
+    
+    {"id": "sin", "name": "Sinhala Bible", "abbreviation": "SIN", "language": "Sinhala", "language_code": "si", "year": 1956, "translation_type": "formal"},
+    {"id": "pan", "name": "Punjabi Bible", "abbreviation": "PAN", "language": "Punjabi", "language_code": "pa", "year": 1819, "translation_type": "formal"},
+    {"id": "guj", "name": "Gujarati Bible", "abbreviation": "GUJ", "language": "Gujarati", "language_code": "gu", "year": 2000, "translation_type": "formal"},
+    {"id": "kan", "name": "Kannada Bible", "abbreviation": "KAN", "language": "Kannada", "language_code": "kn", "year": 2016, "translation_type": "formal"},
+    {"id": "ori", "name": "Oriya Bible", "abbreviation": "ORI", "language": "Odia", "language_code": "or", "year": 2012, "translation_type": "formal"},
+    
+    {"id": "hau", "name": "Hausa Bible", "abbreviation": "HAU", "language": "Hausa", "language_code": "ha", "year": 1980, "translation_type": "formal"},
+    {"id": "yor", "name": "Yoruba Bible", "abbreviation": "YOR", "language": "Yoruba", "language_code": "yo", "year": 1884, "translation_type": "formal"},
+    {"id": "ibo", "name": "Igbo Bible", "abbreviation": "IBO", "language": "Igbo", "language_code": "ig", "year": 1913, "translation_type": "formal"},
+    
+    {"id": "mlg", "name": "Malagasy Bible", "abbreviation": "MLG", "language": "Malagasy", "language_code": "mg", "year": 1835, "translation_type": "formal"},
+    {"id": "som", "name": "Somali Bible", "abbreviation": "SOM", "language": "Somali", "language_code": "so", "year": 1979, "translation_type": "formal"},
+    
+    {"id": "que", "name": "Quechua Bible", "abbreviation": "QUE", "language": "Quechua", "language_code": "qu", "year": 1987, "translation_type": "formal"},
+    {"id": "aym", "name": "Aymara Bible", "abbreviation": "AYM", "language": "Aymara", "language_code": "ay", "year": 1987, "translation_type": "formal"},
+    {"id": "grn", "name": "Guarani Bible", "abbreviation": "GRN", "language": "Guarani", "language_code": "gn", "year": 1996, "translation_type": "formal"},
+    
+    {"id": "alb", "name": "Albanian Bible", "abbreviation": "ALB", "language": "Albanian", "language_code": "sq", "year": 1990, "translation_type": "formal"},
+    {"id": "mkd", "name": "Macedonian Bible", "abbreviation": "MKD", "language": "Macedonian", "language_code": "mk", "year": 1990, "translation_type": "formal"},
+    {"id": "srp", "name": "Serbian Bible", "abbreviation": "SRP", "language": "Serbian", "language_code": "sr", "year": 1968, "translation_type": "formal"},
+    {"id": "bos", "name": "Bosnian Bible", "abbreviation": "BOS", "language": "Bosnian", "language_code": "bs", "year": 2013, "translation_type": "formal"},
+    {"id": "slv", "name": "Slovenian Bible", "abbreviation": "SLV", "language": "Slovenian", "language_code": "sl", "year": 1996, "translation_type": "formal"},
+    
+    {"id": "lit", "name": "Lithuanian Bible", "abbreviation": "LIT", "language": "Lithuanian", "language_code": "lt", "year": 1999, "translation_type": "formal"},
+    {"id": "lav", "name": "Latvian Bible", "abbreviation": "LAV", "language": "Latvian", "language_code": "lv", "year": 2012, "translation_type": "formal"},
+    {"id": "est", "name": "Estonian Bible", "abbreviation": "EST", "language": "Estonian", "language_code": "et", "year": 1997, "translation_type": "formal"},
+    
+    {"id": "arm", "name": "Armenian Bible", "abbreviation": "ARM", "language": "Armenian", "language_code": "hy", "year": 1853, "translation_type": "formal"},
+    {"id": "geo", "name": "Georgian Bible", "abbreviation": "GEO", "language": "Georgian", "language_code": "ka", "year": 1989, "translation_type": "formal"},
+    {"id": "aze", "name": "Azerbaijani Bible", "abbreviation": "AZE", "language": "Azerbaijani", "language_code": "az", "year": 2001, "translation_type": "formal"},
+    
+    {"id": "kaz", "name": "Kazakh Bible", "abbreviation": "KAZ", "language": "Kazakh", "language_code": "kk", "year": 2012, "translation_type": "formal"},
+    {"id": "uzb", "name": "Uzbek Bible", "abbreviation": "UZB", "language": "Uzbek", "language_code": "uz", "year": 2013, "translation_type": "formal"},
+    {"id": "tgk", "name": "Tajik Bible", "abbreviation": "TGK", "language": "Tajik", "language_code": "tg", "year": 2015, "translation_type": "formal"},
+    {"id": "mon", "name": "Mongolian Bible", "abbreviation": "MON", "language": "Mongolian", "language_code": "mn", "year": 2015, "translation_type": "formal"},
+    
+    {"id": "ice", "name": "Icelandic Bible", "abbreviation": "ICE", "language": "Icelandic", "language_code": "is", "year": 2007, "translation_type": "formal"},
+    {"id": "wel", "name": "Welsh Bible", "abbreviation": "WEL", "language": "Welsh", "language_code": "cy", "year": 1988, "translation_type": "formal"},
+    {"id": "iri", "name": "Irish Bible", "abbreviation": "IRI", "language": "Irish", "language_code": "ga", "year": 2013, "translation_type": "formal"},
+    {"id": "sco", "name": "Scottish Gaelic Bible", "abbreviation": "SCO", "language": "Scottish Gaelic", "language_code": "gd", "year": 1826, "translation_type": "formal"},
+    
+    {"id": "mal_rev", "name": "Malayalam Revised", "abbreviation": "MALR", "language": "Malayalam", "language_code": "ml", "year": 2019, "translation_type": "formal"},
+    {"id": "niv84", "name": "NIV 1984", "abbreviation": "NIV84", "language": "English", "language_code": "en", "year": 1984, "translation_type": "dynamic"},
+    {"id": "niv2011", "name": "NIV 2011", "abbreviation": "NIV2011", "language": "English", "language_code": "en", "year": 2011, "translation_type": "dynamic"},
+    {"id": "kjv1611", "name": "KJV Original 1611", "abbreviation": "KJV1611", "language": "English", "language_code": "en", "year": 1611, "translation_type": "formal"},
+    {"id": "geneva", "name": "Geneva Bible", "abbreviation": "GNV", "language": "English", "language_code": "en", "year": 1599, "translation_type": "formal"},
+    {"id": "douay", "name": "Douay-Rheims", "abbreviation": "DRA", "language": "English", "language_code": "en", "year": 1899, "translation_type": "formal"},
+    {"id": "wycliffe", "name": "Wycliffe Bible", "abbreviation": "WYC", "language": "English", "language_code": "en", "year": 1395, "translation_type": "formal"},
+    {"id": "tyndale", "name": "Tyndale Bible", "abbreviation": "TYN", "language": "English", "language_code": "en", "year": 1530, "translation_type": "formal"},
+]
