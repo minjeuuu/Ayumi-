@@ -126,13 +126,99 @@ async def root():
 
 @api_router.get("/dashboard")
 async def get_dashboard():
-    """Get comprehensive daily dashboard content"""
-    try:
-        dashboard = await generate_home_dashboard()
-        return dashboard
-    except Exception as e:
-        logging.error(f"Dashboard error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    """Get comprehensive daily dashboard content - returns fallback instantly, Claude-generated when available"""
+    import asyncio
+    from datetime import datetime
+    
+    # Check if we have a cached Claude-generated dashboard in MongoDB
+    cached = await db.cached_dashboards.find_one({"date": datetime.now().strftime("%Y-%m-%d")})
+    if cached:
+        cached.pop('_id', None)
+        return cached.get('data', get_fallback_dashboard())
+    
+    # Return fallback instantly 
+    fallback = get_fallback_dashboard()
+    
+    # Schedule Claude generation in background
+    async def generate_and_cache():
+        try:
+            dashboard = await generate_home_dashboard()
+            await db.cached_dashboards.update_one(
+                {"date": datetime.now().strftime("%Y-%m-%d")},
+                {"$set": {"date": datetime.now().strftime("%Y-%m-%d"), "data": dashboard}},
+                upsert=True
+            )
+        except Exception as e:
+            logging.error(f"Background dashboard generation error: {e}")
+    
+    asyncio.create_task(generate_and_cache())
+    return fallback
+
+
+def get_fallback_dashboard():
+    """Get instant fallback dashboard content"""
+    from datetime import datetime
+    return {
+        "date": datetime.now().isoformat(),
+        "verse": {
+            "text": "Trust in the Lord with all your heart, and do not lean on your own understanding. In all your ways acknowledge him, and he will make straight your paths.",
+            "reference": "Proverbs 3:5-6",
+            "context": "Solomon instructs his son on the foundation of wisdom: complete trust in God.",
+            "crossReferences": ["Psalm 37:5", "Isaiah 26:3-4", "Jeremiah 17:7-8"],
+            "gospelConnection": "Christ is the wisdom of God made flesh, the ultimate path we trust and follow."
+        },
+        "passage": {
+            "reference": "Psalm 23",
+            "text": "The Lord is my shepherd; I shall not want. He makes me lie down in green pastures. He leads me beside still waters. He restores my soul. He leads me in paths of righteousness for his name's sake. Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me; your rod and your staff, they comfort me. You prepare a table before me in the presence of my enemies; you anoint my head with oil; my cup overflows. Surely goodness and mercy shall follow me all the days of my life, and I shall dwell in the house of the Lord forever.",
+            "outline": ["The Shepherd's Provision (v1-3)", "The Shepherd's Protection (v4)", "The Shepherd's Abundance (v5-6)"],
+            "author": "David",
+            "historicalSetting": "Written from David's personal experience as both shepherd and king, reflecting on God's faithful care through every season."
+        },
+        "devotional": {
+            "title": "The Steady Walk",
+            "scriptureQuote": "Trust in the Lord with all your heart.",
+            "shortReflection": "Our journey with Christ is often less about the destination and more about the daily rhythm of trust.",
+            "longReflection": "Our journey with Christ is often less about the destination and more about the daily rhythm of trust. Each step we take in faith draws us closer to His heart and closer to the people He has placed in our path. Walking by faith means trusting God even when the way ahead is unclear, knowing that His plans are perfect and His timing is sure. Today, let us choose to lean not on our own understanding but to acknowledge Him in all our ways.",
+            "application": "Take a 10-minute prayer walk today, asking God to guide your steps in a specific area of your life.",
+            "prayerGuide": "Lord, I choose to trust You with all my heart today. Help me not to lean on my own understanding. Direct my paths and give me the courage to follow where You lead. Amen."
+        },
+        "questions": {
+            "heartCheck": "Is my heart at rest in God today, or am I carrying burdens I should lay down?",
+            "beliefCheck": "Do I truly believe that God's wisdom surpasses my own understanding?",
+            "obedienceCheck": "What specific step of obedience is the Holy Spirit calling me to take today?"
+        },
+        "prayer": {
+            "focusTheme": "Trust and Surrender",
+            "scripture": "Proverbs 3:5-6",
+            "guidedPrayer": "Father, I come before You with an open heart. I choose to trust You completely, even in the areas I cannot see or understand. Help me to surrender my plans and embrace Yours. Give me eyes to see Your hand at work in every circumstance. In Jesus' name, Amen."
+        },
+        "theme": {
+            "theme": "God's Faithfulness",
+            "keyVerse": "Great is Your faithfulness. - Lamentations 3:23",
+            "supportingVerses": ["Psalm 89:1", "1 Thessalonians 5:24", "Deuteronomy 7:9", "2 Timothy 2:13"]
+        },
+        "attribute": {
+            "attribute": "Immutable",
+            "definition": "God is unchanging in His being, perfections, purposes, and promises.",
+            "scriptureProof": "I the Lord do not change. - Malachi 3:6",
+            "worshipResponse": "I praise You, Lord, for being my unchanging Rock in a world of constant change."
+        },
+        "gospel": {
+            "truth": "Christ died for the ungodly",
+            "reference": "Romans 5:6-8",
+            "explanation": "While we were still sinners, Christ died for us. God demonstrates His own love toward us in this: while we were yet without strength, at just the right time, Christ died for the ungodly."
+        },
+        "history": {
+            "event": "David Anointed as King",
+            "reference": "1 Samuel 16",
+            "description": "God rejects Saul and sends Samuel to Bethlehem to anoint David, the youngest son of Jesse, as the future king of Israel. God looks not at outward appearance but at the heart.",
+            "timeline": {
+                "before": "Saul rejected by God for disobedience",
+                "during": "Samuel anoints David; the Spirit of the Lord comes upon him mightily",
+                "after": "David begins his long journey to the throne, learning faithfulness through trials and persecution"
+            }
+        }
+    }
 
 
 # ==========================
