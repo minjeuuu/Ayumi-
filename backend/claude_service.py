@@ -116,7 +116,19 @@ Return a JSON object with this structure (return ONLY the JSON):
 
         message = UserMessage(text=prompt)
         response = await chat.send_message(message)
-        dashboard_data = json.loads(response)
+        
+        # Try to extract JSON from the response
+        text = response.strip()
+        # Remove markdown code fences if present
+        if text.startswith('```'):
+            text = text.split('\n', 1)[1] if '\n' in text else text[3:]
+            if text.endswith('```'):
+                text = text[:-3]
+            text = text.strip()
+        if text.startswith('json'):
+            text = text[4:].strip()
+        
+        dashboard_data = json.loads(text)
         
         from datetime import datetime
         dashboard_data['date'] = datetime.utcnow().isoformat()
