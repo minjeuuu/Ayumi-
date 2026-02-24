@@ -69,8 +69,21 @@ export const generateHomeDashboard = async (): Promise<HomeDashboardContent> => 
     }
   };
 
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  return fallbackHome;
+  try {
+    console.log('Fetching dashboard from Claude backend...');
+    const response = await fetch(`${BACKEND_URL}/api/dashboard`);
+    
+    if (!response.ok) {
+      throw new Error(`Backend error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('✓ Dashboard loaded from Claude');
+    return data;
+  } catch (error) {
+    console.error('Dashboard fetch error:', error);
+    return fallbackHome;
+  }
 };
 
 // --- Topical Devotional ---
