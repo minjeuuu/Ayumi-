@@ -233,126 +233,22 @@ def get_available_languages():
     {"id": "douay", "name": "Douay-Rheims", "abbreviation": "DRA", "language": "English", "language_code": "en", "year": 1899, "translation_type": "formal"},
     {"id": "wycliffe", "name": "Wycliffe Bible", "abbreviation": "WYC", "language": "English", "language_code": "en", "year": 1395, "translation_type": "formal"},
     {"id": "tyndale", "name": "Tyndale Bible", "abbreviation": "TYN", "language": "English", "language_code": "en", "year": 1530, "translation_type": "formal"},
-]
-
-def get_all_versions():
-    """Get all Bible versions"""
-    return BIBLE_VERSIONS
-
-def get_versions_by_language(language_code: str):
-    """Get Bible versions for a specific language"""
-    return [v for v in BIBLE_VERSIONS if v["language_code"] == language_code]
-
-def get_version_by_id(version_id: str):
-    """Get a specific Bible version by ID"""
-    for v in BIBLE_VERSIONS:
-        if v["id"] == version_id:
-            return v
-    return None
-
-def get_available_languages():
-    """Get list of available languages"""
-    languages = {}
-    for v in BIBLE_VERSIONS:
-        if v["language_code"] not in languages:
-            languages[v["language_code"]] = v["language"]
-    return languages
-    {"id": "ewe", "name": "Ewe Bible", "abbreviation": "EWE", "language": "Ewe", "language_code": "ee", "year": 1990, "translation_type": "formal"},
-    {"id": "fon", "name": "Fon Bible", "abbreviation": "FON", "language": "Fon", "language_code": "fon", "year": 2003, "translation_type": "formal"},
-    {"id": "twi", "name": "Twi Bible", "abbreviation": "TWI", "language": "Twi", "language_code": "tw", "year": 1871, "translation_type": "formal"},
-    {"id": "akan", "name": "Akan Bible", "abbreviation": "AKA", "language": "Akan", "language_code": "ak", "year": 2012, "translation_type": "formal"},
-    {"id": "kikuyu", "name": "Kikuyu Bible", "abbreviation": "KIK", "language": "Kikuyu", "language_code": "ki", "year": 1951, "translation_type": "formal"},
-    {"id": "kamba", "name": "Kamba Bible", "abbreviation": "KAM", "language": "Kamba", "language_code": "kam", "year": 1998, "translation_type": "formal"},
-    {"id": "luhya", "name": "Luhya Bible", "abbreviation": "LUH", "language": "Luhya", "language_code": "luy", "year": 2011, "translation_type": "formal"},
-    {"id": "gikuyu", "name": "Gikuyu Bible", "abbreviation": "GIK", "language": "Gikuyu", "language_code": "kik", "year": 1951, "translation_type": "formal"},
-    {"id": "luganda", "name": "Luganda Bible", "abbreviation": "LUG", "language": "Luganda", "language_code": "lg", "year": 1896, "translation_type": "formal"},
-    {"id": "kinyarwanda", "name": "Kinyarwanda Bible", "abbreviation": "KIN", "language": "Kinyarwanda", "language_code": "rw", "year": 1982, "translation_type": "formal"},
-    {"id": "kirundi", "name": "Kirundi Bible", "abbreviation": "KIR", "language": "Kirundi", "language_code": "rn", "year": 2008, "translation_type": "formal"},
-    {"id": "lingala", "name": "Lingala Bible", "abbreviation": "LIN", "language": "Lingala", "language_code": "ln", "year": 1990, "translation_type": "formal"},
-    {"id": "shona", "name": "Shona Bible", "abbreviation": "SHO", "language": "Shona", "language_code": "sn", "year": 1949, "translation_type": "formal"},
-    {"id": "ndebele", "name": "Ndebele Bible", "abbreviation": "NDE", "language": "Ndebele", "language_code": "nd", "year": 1978, "translation_type": "formal"},
-    {"id": "bemba", "name": "Bemba Bible", "abbreviation": "BEM", "language": "Bemba", "language_code": "bem", "year": 1956, "translation_type": "formal"},
-    {"id": "chichewa", "name": "Chichewa Bible", "abbreviation": "CHI", "language": "Chichewa", "language_code": "ny", "year": 1922, "translation_type": "formal"},
-    {"id": "tumbuka", "name": "Tumbuka Bible", "abbreviation": "TUM", "language": "Tumbuka", "language_code": "tum", "year": 1996, "translation_type": "formal"},
-    {"id": "tsonga", "name": "Tsonga Bible", "abbreviation": "TSO", "language": "Tsonga", "language_code": "ts", "year": 1989, "translation_type": "formal"},
-    {"id": "venda", "name": "Venda Bible", "abbreviation": "VEN", "language": "Venda", "language_code": "ve", "year": 1998, "translation_type": "formal"},
-    {"id": "javanese", "name": "Javanese Bible", "abbreviation": "JAV", "language": "Javanese", "language_code": "jv", "year": 1854, "translation_type": "formal"},
-    {"id": "sundanese", "name": "Sundanese Bible", "abbreviation": "SUN", "language": "Sundanese", "language_code": "su", "year": 1877, "translation_type": "formal"},
-    {"id": "batak", "name": "Batak Bible", "abbreviation": "BAT", "language": "Batak", "language_code": "btk", "year": 1894, "translation_type": "formal"},
-    {"id": "minangkabau", "name": "Minangkabau Bible", "abbreviation": "MIN", "language": "Minangkabau", "language_code": "min", "year": 1913, "translation_type": "formal"},
-    {"id": "ilocano", "name": "Ilocano Bible", "abbreviation": "ILO", "language": "Ilocano", "language_code": "ilo", "year": 1909, "translation_type": "formal"},
-    {"id": "waray", "name": "Waray Bible", "abbreviation": "WAR", "language": "Waray", "language_code": "war", "year": 1914, "translation_type": "formal"},
-    {"id": "kapampangan", "name": "Kapampangan Bible", "abbreviation": "KAP", "language": "Kapampangan", "language_code": "pam", "year": 1917, "translation_type": "formal"},
-    {"id": "pangasinan", "name": "Pangasinan Bible", "abbreviation": "PAN", "language": "Pangasinan", "language_code": "pag", "year": 1915, "translation_type": "formal"},
-    {"id": "bikol", "name": "Bikol Bible", "abbreviation": "BIK", "language": "Bikol", "language_code": "bik", "year": 1914, "translation_type": "formal"},
-    {"id": "maranao", "name": "Maranao Bible", "abbreviation": "MAR", "language": "Maranao", "language_code": "mrw", "year": 1980, "translation_type": "formal"},
-    {"id": "tausug", "name": "Tausug Bible", "abbreviation": "TAU", "language": "Tausug", "language_code": "tsg", "year": 2011, "translation_type": "formal"},
-    {"id": "karen", "name": "Karen Bible", "abbreviation": "KAR", "language": "Karen", "language_code": "kar", "year": 1853, "translation_type": "formal"},
-    {"id": "kachin", "name": "Kachin Bible", "abbreviation": "KAC", "language": "Kachin", "language_code": "kac", "year": 1927, "translation_type": "formal"},
-    {"id": "chin", "name": "Chin Bible", "abbreviation": "CHN", "language": "Chin", "language_code": "ctd", "year": 1935, "translation_type": "formal"},
-    {"id": "shan", "name": "Shan Bible", "abbreviation": "SHA", "language": "Shan", "language_code": "shn", "year": 1892, "translation_type": "formal"},
-    {"id": "hmong", "name": "Hmong Bible", "abbreviation": "HMO", "language": "Hmong", "language_code": "hmn", "year": 1987, "translation_type": "formal"},
-    {"id": "tibetan", "name": "Tibetan Bible", "abbreviation": "TIB", "language": "Tibetan", "language_code": "bo", "year": 1948, "translation_type": "formal"},
-    {"id": "uighur", "name": "Uighur Bible", "abbreviation": "UIG", "language": "Uighur", "language_code": "ug", "year": 2010, "translation_type": "formal"},
-    {"id": "pashto", "name": "Pashto Bible", "abbreviation": "PAS", "language": "Pashto", "language_code": "ps", "year": 2010, "translation_type": "formal"},
-    {"id": "dari", "name": "Dari Bible", "abbreviation": "DAR", "language": "Dari", "language_code": "prs", "year": 2012, "translation_type": "formal"},
-    {"id": "kurdish", "name": "Kurdish Bible", "abbreviation": "KUR", "language": "Kurdish", "language_code": "ku", "year": 2008, "translation_type": "formal"},
-    {"id": "assyrian", "name": "Assyrian Bible", "abbreviation": "ASY", "language": "Assyrian", "language_code": "aii", "year": 1893, "translation_type": "formal"},
-    {"id": "maltese", "name": "Maltese Bible", "abbreviation": "MAL", "language": "Maltese", "language_code": "mt", "year": 1980, "translation_type": "formal"},
-    {"id": "basque", "name": "Basque Bible", "abbreviation": "BAS", "language": "Basque", "language_code": "eu", "year": 1571, "translation_type": "formal"},
-    {"id": "catalan", "name": "Catalan Bible", "abbreviation": "CAT", "language": "Catalan", "language_code": "ca", "year": 1993, "translation_type": "formal"},
-    {"id": "galician", "name": "Galician Bible", "abbreviation": "GAL", "language": "Galician", "language_code": "gl", "year": 1989, "translation_type": "formal"},
-    {"id": "breton", "name": "Breton Bible", "abbreviation": "BRE", "language": "Breton", "language_code": "br", "year": 1866, "translation_type": "formal"},
-    {"id": "corsican", "name": "Corsican Bible", "abbreviation": "COR", "language": "Corsican", "language_code": "co", "year": 1990, "translation_type": "formal"},
-    {"id": "sardinian", "name": "Sardinian Bible", "abbreviation": "SAR", "language": "Sardinian", "language_code": "sc", "year": 2005, "translation_type": "formal"},
-    {"id": "frisian", "name": "Frisian Bible", "abbreviation": "FRI", "language": "Frisian", "language_code": "fy", "year": 1943, "translation_type": "formal"},
-    {"id": "luxembourgish", "name": "Luxembourgish Bible", "abbreviation": "LUX", "language": "Luxembourgish", "language_code": "lb", "year": 2011, "translation_type": "formal"},
-    {"id": "faroese", "name": "Faroese Bible", "abbreviation": "FAR", "language": "Faroese", "language_code": "fo", "year": 1961, "translation_type": "formal"},
-    {"id": "sami", "name": "Sami Bible", "abbreviation": "SAM", "language": "Sami", "language_code": "se", "year": 2019, "translation_type": "formal"},
-    {"id": "greenlandic", "name": "Greenlandic Bible", "abbreviation": "GRE", "language": "Greenlandic", "language_code": "kl", "year": 1744, "translation_type": "formal"},
-    {"id": "inuktitut", "name": "Inuktitut Bible", "abbreviation": "INU", "language": "Inuktitut", "language_code": "iu", "year": 1991, "translation_type": "formal"},
-    {"id": "cree", "name": "Cree Bible", "abbreviation": "CRE", "language": "Cree", "language_code": "cr", "year": 1862, "translation_type": "formal"},
-    {"id": "ojibwe", "name": "Ojibwe Bible", "abbreviation": "OJI", "language": "Ojibwe", "language_code": "oj", "year": 1875, "translation_type": "formal"},
-    {"id": "cherokee", "name": "Cherokee Bible", "abbreviation": "CHE", "language": "Cherokee", "language_code": "chr", "year": 1860, "translation_type": "formal"},
-    {"id": "navajo", "name": "Navajo Bible", "abbreviation": "NAV", "language": "Navajo", "language_code": "nv", "year": 1985, "translation_type": "formal"},
-    {"id": "hawaiian", "name": "Hawaiian Bible", "abbreviation": "HAW", "language": "Hawaiian", "language_code": "haw", "year": 1839, "translation_type": "formal"},
-    {"id": "maori", "name": "Maori Bible", "abbreviation": "MAO", "language": "Maori", "language_code": "mi", "year": 1868, "translation_type": "formal"},
-    {"id": "samoan", "name": "Samoan Bible", "abbreviation": "SAM", "language": "Samoan", "language_code": "sm", "year": 1862, "translation_type": "formal"},
-    {"id": "tongan", "name": "Tongan Bible", "abbreviation": "TON", "language": "Tongan", "language_code": "to", "year": 1862, "translation_type": "formal"},
-    {"id": "fijian", "name": "Fijian Bible", "abbreviation": "FIJ", "language": "Fijian", "language_code": "fj", "year": 1859, "translation_type": "formal"},
-    {"id": "tahitian", "name": "Tahitian Bible", "abbreviation": "TAH", "language": "Tahitian", "language_code": "ty", "year": 1838, "translation_type": "formal"},
-    {"id": "marshallese", "name": "Marshallese Bible", "abbreviation": "MAR", "language": "Marshallese", "language_code": "mh", "year": 1982, "translation_type": "formal"},
-    {"id": "chuukese", "name": "Chuukese Bible", "abbreviation": "CHU", "language": "Chuukese", "language_code": "chk", "year": 1972, "translation_type": "formal"},
     {"id": "tok-pisin", "name": "Tok Pisin Bible", "abbreviation": "TOK", "language": "Tok Pisin", "language_code": "tpi", "year": 1989, "translation_type": "formal"},
-    {"id": "bislama", "name": "Bislama Bible", "abbreviation": "BIS", "language": "Bislama", "language_code": "bi", "year": 1998, "translation_type": "formal"},
-    {"id": "niv1973", "name": "NIV 1973", "abbreviation": "NIV73", "language": "English", "language_code": "en", "year": 1973, "translation_type": "dynamic"},
-    {"id": "rsv1946", "name": "RSV 1946", "abbreviation": "RSV46", "language": "English", "language_code": "en", "year": 1946, "translation_type": "formal"},
-    {"id": "asv1901", "name": "ASV 1901", "abbreviation": "ASV01", "language": "English", "language_code": "en", "year": 1901, "translation_type": "formal"},
-    {"id": "darby", "name": "Darby Translation", "abbreviation": "DARBY", "language": "English", "language_code": "en", "year": 1890, "translation_type": "formal"},
-    {"id": "bishops", "name": "Bishops Bible", "abbreviation": "BIS", "language": "English", "language_code": "en", "year": 1568, "translation_type": "formal"},
-    {"id": "coverdale", "name": "Coverdale Bible", "abbreviation": "COV", "language": "English", "language_code": "en", "year": 1535, "translation_type": "formal"},
-    {"id": "great", "name": "Great Bible", "abbreviation": "GRT", "language": "English", "language_code": "en", "year": 1539, "translation_type": "formal"},
-    {"id": "matthews", "name": "Matthews Bible", "abbreviation": "MAT", "language": "English", "language_code": "en", "year": 1537, "translation_type": "formal"},
-    {"id": "taverner", "name": "Taverner Bible", "abbreviation": "TAV", "language": "English", "language_code": "en", "year": 1539, "translation_type": "formal"},
 ]
 
 def get_all_versions():
-    """Get all Bible versions"""
     return BIBLE_VERSIONS
 
 def get_versions_by_language(language_code: str):
-    """Get Bible versions for a specific language"""
     return [v for v in BIBLE_VERSIONS if v["language_code"] == language_code]
 
 def get_version_by_id(version_id: str):
-    """Get a specific Bible version by ID"""
     for v in BIBLE_VERSIONS:
         if v["id"] == version_id:
             return v
     return None
 
 def get_available_languages():
-    """Get list of available languages"""
     languages = {}
     for v in BIBLE_VERSIONS:
         if v["language_code"] not in languages:
