@@ -88,6 +88,8 @@ FALLBACK_HOME_DASHBOARD = {
 async def generate_home_dashboard() -> Dict[str, Any]:
     """Generate comprehensive daily dashboard content using Claude"""
     try:
+        chat = get_chat_client(session_id="dashboard")
+        
         prompt = """Generate a comprehensive daily devotional dashboard for 'Ayumi - Walking with God', a serious Christian discipleship app.
 
 Requirements:
@@ -157,18 +159,14 @@ Return a JSON object with this exact structure:
       "after": "the result/impact"
     }
   }
-}"""
+}
 
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=4096,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
-        )
+Return ONLY the JSON object."""
+
+        message = UserMessage(text=prompt)
+        response = await chat.send_message(message)
         
-        content_text = message.content[0].text
-        dashboard_data = json.loads(content_text)
+        dashboard_data = json.loads(response)
         
         from datetime import datetime
         dashboard_data['date'] = datetime.utcnow().isoformat()
