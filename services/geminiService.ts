@@ -93,7 +93,25 @@ export const generateDailyDevotional = async (topic?: string): Promise<Devotiona
 
 // --- Bible Reader ---
 export const getBibleChapter = async (book: string, chapter: number): Promise<BibleVerse[]> => {
-  return [];
+  try {
+    console.log(`Fetching ${book} ${chapter} from backend...`);
+    const response = await fetch(`${BACKEND_URL}/api/bible/read`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ book, chapter, version: 'ESV' })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Backend error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log(`✓ Got ${data.verses?.length || 0} verses from Claude`);
+    return data.verses || [];
+  } catch (error) {
+    console.error('Bible fetch error:', error);
+    return [];
+  }
 };
 
 // --- Chapter Context ---
