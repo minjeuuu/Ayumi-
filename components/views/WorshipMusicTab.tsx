@@ -196,16 +196,18 @@ const WorshipMusicTab = () => {
       {view === 'playlists' && (
         <div className="space-y-3">
           {[
-            { name: 'Morning Worship', songs: 25, duration: '1h 45m', image: '🌅' },
-            { name: 'Evening Prayer', songs: 18, duration: '1h 12m', image: '🌙' },
-            { name: 'Praise & Thanksgiving', songs: 30, duration: '2h 5m', image: '🎉' },
-            { name: 'Quiet Time', songs: 15, duration: '52m', image: '🕊️' },
-            { name: 'Faith Builders', songs: 22, duration: '1h 30m', image: '💪' },
+            { name: 'Morning Worship', songs: 25, duration: '1h 45m', icon: 'sunrise' },
+            { name: 'Evening Prayer', songs: 18, duration: '1h 12m', icon: 'moon' },
+            { name: 'Praise and Thanksgiving', songs: 30, duration: '2h 5m', icon: 'praise' },
+            { name: 'Quiet Time', songs: 15, duration: '52m', icon: 'quiet' },
+            { name: 'Faith Builders', songs: 22, duration: '1h 30m', icon: 'faith' },
+            { name: 'Hymns of the Faith', songs: 28, duration: '1h 55m', icon: 'hymn' },
+            { name: 'Scripture Songs', songs: 20, duration: '1h 20m', icon: 'scripture' },
           ].map((playlist, i) => (
             <div key={i} className="bg-white p-4 rounded-xl border border-stone-200 hover:border-primary/50 transition-all cursor-pointer">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg flex items-center justify-center text-2xl">
-                  {playlist.image}
+                <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg flex items-center justify-center">
+                  <Music size={24} className="text-primary" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-serif font-bold text-stone-800">{playlist.name}</h3>
