@@ -141,6 +141,19 @@ Return a JSON object with this structure (return ONLY the JSON):
         return FALLBACK_HOME_DASHBOARD
 
 
+def parse_json_response(text: str):
+    """Helper to parse JSON from LLM responses, handling markdown fences"""
+    text = text.strip()
+    if text.startswith('```'):
+        text = text.split('\n', 1)[1] if '\n' in text else text[3:]
+        if text.endswith('```'):
+            text = text[:-3]
+        text = text.strip()
+    if text.startswith('json'):
+        text = text[4:].strip()
+    return json.loads(text)
+
+
 async def generate_devotional(topic: Optional[str] = None) -> Dict[str, Any]:
     """Generate devotional content"""
     try:
@@ -148,20 +161,20 @@ async def generate_devotional(topic: Optional[str] = None) -> Dict[str, Any]:
         topic_text = f" on {topic}" if topic else ""
         prompt = f"""Generate deep devotional content{topic_text}.
 
-Return JSON:
+Return JSON (ONLY JSON, no markdown):
 {{"title": "title", "scripture": {{"text": "text", "reference": "ref"}}, "reflection": "reflection", "prayer": "prayer", "stepOfFaith": "step", "tags": ["tag1"]}}"""
 
         message = UserMessage(text=prompt)
         response = await chat.send_message(message)
-        return json.loads(response)
+        return parse_json_response(response)
         
     except Exception as e:
         print(f"Devotional error: {e}")
         return {
             "title": "Walking by Faith",
             "scripture": {"text": "For we walk by faith, not by sight.", "reference": "2 Corinthians 5:7"},
-            "reflection": "Faith is the foundation of our walk with God...",
-            "prayer": "Lord, increase my faith today.",
+            "reflection": "Faith is the foundation of our walk with God. Every day we are given new opportunities to trust in His plans, even when we cannot see the road ahead. The beauty of faith is that it does not require us to have all the answers - it only requires us to believe that God does.",
+            "prayer": "Lord, increase my faith today. Help me to walk in trust and surrender.",
             "stepOfFaith": "Trust God with one specific concern today.",
             "tags": ["faith", "trust"]
         }
@@ -173,14 +186,14 @@ async def get_bible_chapter(book: str, chapter: int, version: str = "ESV") -> Li
         chat = get_chat_client(session_id=f"bible-{book}-{chapter}")
         prompt = f"""Provide {book} chapter {chapter} in {version}.
 
-Return JSON array (ONLY the array):
+Return JSON array (ONLY the array, no markdown):
 [{{"book":"{book}","chapter":{chapter},"verse":1,"text":"verse text"}},{{"book":"{book}","chapter":{chapter},"verse":2,"text":"verse text"}}]
 
 Include ALL verses with exact biblical text."""
 
         message = UserMessage(text=prompt)
         response = await chat.send_message(message)
-        return json.loads(response)
+        return parse_json_response(response)
         
     except Exception as e:
         print(f"Bible chapter error: {e}")
@@ -195,12 +208,12 @@ async def get_chapter_context(book: str, chapter: int) -> Optional[Dict[str, Any
         chat = get_chat_client(session_id=f"context-{book}-{chapter}")
         prompt = f"""Context for {book} chapter {chapter}.
 
-Return JSON:
+Return JSON (ONLY JSON, no markdown):
 {{"reference":"{book} {chapter}","outline":["point1"],"author":"author","historicalSetting":"setting","purpose":"purpose","crossReferences":["ref1"]}}"""
 
         message = UserMessage(text=prompt)
         response = await chat.send_message(message)
-        return json.loads(response)
+        return parse_json_response(response)
         
     except Exception as e:
         print(f"Context error: {e}")
@@ -212,11 +225,11 @@ async def generate_prayer_prompts(verse: str) -> List[str]:
     try:
         chat = get_chat_client(session_id="prayer-prompts")
         prompt = f"""Based on "{verse}", generate 3 prayer prompts.
-Return JSON array: ["prompt1","prompt2","prompt3"]"""
+Return JSON array (ONLY array, no markdown): ["prompt1","prompt2","prompt3"]"""
 
         message = UserMessage(text=prompt)
         response = await chat.send_message(message)
-        return json.loads(response)
+        return parse_json_response(response)
         
     except Exception as e:
         return ["Lord, help me apply this truth.", "Thank You for Your Word.", "Give me faith to live this out."]
