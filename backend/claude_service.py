@@ -1,8 +1,8 @@
 """
 Claude AI Service for Ayumi - Walking with God
-Replaces all Google Gemini functionality with Claude Sonnet
+Using Emergent Integrations for Claude Sonnet
 """
-import anthropic
+from emergentintegrations.llm.chat import LlmChat, UserMessage
 import json
 from typing import Dict, List, Any, Optional
 import os
@@ -10,9 +10,17 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY', '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')
+EMERGENT_LLM_KEY = os.getenv('EMERGENT_LLM_KEY', 'sk-emergent-b2cA3430e448e7321C')
 
-client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
+def get_chat_client(session_id: str = "ayumi-default") -> LlmChat:
+    """Get configured LlmChat client"""
+    chat = LlmChat(
+        api_key=EMERGENT_LLM_KEY,
+        session_id=session_id,
+        system_message="You are a theologically sound Bible assistant for Ayumi app. Provide accurate, evangelical, gospel-centered content."
+    )
+    chat.with_model("anthropic", "claude-4-sonnet-20250514")
+    return chat
 
 FALLBACK_HOME_DASHBOARD = {
     "date": "",
