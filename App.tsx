@@ -89,6 +89,27 @@ const App: React.FC = () => {
   const [content, setContent] = useState<HomeDashboardContent | null>(null);
   const [appState, setAppState] = useState<AppState>(AppState.LOADING);
   const [activeTab, setActiveTab] = useState<Tab>(Tab.HOME);
+  const [theme, setTheme] = useState<string>('light');
+
+  // Load theme from settings
+  useEffect(() => {
+    const settings = localStorage.getItem('ayumi_app_settings');
+    if (settings) {
+      try {
+        const parsed = JSON.parse(settings);
+        if (parsed.theme) setTheme(parsed.theme);
+      } catch {}
+    }
+    // Listen for storage changes (settings updates)
+    const handleStorage = () => {
+      const s = localStorage.getItem('ayumi_app_settings');
+      if (s) {
+        try { const p = JSON.parse(s); if (p.theme) setTheme(p.theme); } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
 
   const getTodayString = () => new Date().toISOString().split('T')[0];
 
@@ -177,15 +198,21 @@ const App: React.FC = () => {
     }
   }, [appState]);
 
+  const themeClass = theme === 'dark' ? 'bg-stone-900 text-stone-100' 
+    : theme === 'sepia' ? 'bg-amber-50 text-stone-800'
+    : theme === 'forest' ? 'bg-green-50 text-stone-800'
+    : theme === 'ocean' ? 'bg-blue-50 text-stone-800'
+    : 'bg-stone-50 text-stone-900';
+
   if (appState === AppState.LOADING) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-stone-50/50 flex flex-col font-sans selection:bg-primary/20 selection:text-stone-900">
+    <div className={`min-h-screen ${themeClass} flex flex-col font-sans selection:bg-primary/20`}>
       <div className="flex w-full max-w-5xl mx-auto flex-grow bg-white min-h-screen shadow-2xl overflow-hidden relative">
         
         {/* Desktop sidebar navigation */}
         <div className="hidden md:block">
-          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <Navigation activeTab={activeTab} onTabChange={setActiveTab} theme={theme} />
         </div>
 
         {/* Main content area */}
@@ -205,7 +232,7 @@ const App: React.FC = () => {
 
         {/* Mobile navigation */}
         <div className="block md:hidden">
-          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+          <Navigation activeTab={activeTab} onTabChange={setActiveTab} theme={theme} />
         </div>
         </div>
       </div>

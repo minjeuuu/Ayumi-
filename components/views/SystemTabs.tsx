@@ -291,6 +291,8 @@ export const SettingsTab: React.FC = () => {
     const updated = { ...settings, [key]: value };
     setSettings(updated);
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
+    // Dispatch storage event so App can pick up theme changes
+    window.dispatchEvent(new StorageEvent('storage', { key: SETTINGS_KEY }));
   };
 
   const Section: React.FC<{ id: string; title: string; icon: React.ReactNode; children: React.ReactNode }> = ({ id, title, icon, children }) => (
