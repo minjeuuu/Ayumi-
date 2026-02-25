@@ -94,7 +94,8 @@ export const StudyTab: React.FC = () => {
         if (parts) {
           const data = await getBibleChapter(parts[1], parseInt(parts[2]), v);
           const verseNum = parseInt(parts[3]);
-          const verse = data.verses?.find((vv: any) => vv.verse === verseNum);
+          const versesArr = (data as any).verses;
+          const verse = versesArr?.find((vv: any) => vv.verse === verseNum);
           results[v] = verse?.text || 'Not found';
         } else {
           results[v] = 'Invalid reference format (use Book Chapter:Verse)';

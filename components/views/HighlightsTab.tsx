@@ -157,7 +157,7 @@ const HighlightCard: React.FC<{
   onCopy: (h: Highlight) => void;
   onShare: (h: Highlight) => void;
 }> = ({ highlight, colorMap, onDelete, onCopy, onShare }) => {
-  const bgColor = colorMap[highlight.color] || '#fef08a';
+  const bgColor = (colorMap as Record<string, string>)[highlight.color] || '#fef08a';
 
   return (
     <div className="mb-3 bg-white rounded-xl border border-stone-100 shadow-sm overflow-hidden">
