@@ -154,16 +154,62 @@ const JournalTab: React.FC<{ theme?: string }> = ({ theme = 'light' }) => {
   };
 
   const downloadEntry = (entry: JournalEntry, format: 'txt' | 'pdf' | 'html') => {
-    const text = `${entry.title}\n${new Date(entry.date).toLocaleDateString()}\n\n${entry.text}`;
+    const dateStr = new Date(entry.date).toLocaleDateString();
+    const text = `${entry.title || 'Untitled'}\n${dateStr}\n\n${entry.text}${entry.linkedScripture ? '\n\n— ' + entry.linkedScripture : ''}`;
+    
     if (format === 'txt') {
       const blob = new Blob([text], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `${entry.title || 'journal'}.txt`; a.click();
-    } else if (format === 'html') {
-      const html = `<!DOCTYPE html><html><head><title>${entry.title}</title><style>body{font-family:serif;max-width:700px;margin:40px auto;padding:20px;line-height:1.8;}</style></head><body><h1>${entry.title}</h1><p style="color:#666">${new Date(entry.date).toLocaleDateString()}</p><hr/><div>${entry.text.replace(/\n/g, '<br/>')}</div>${entry.linkedScripture ? `<p style="color:#5B7C75;font-style:italic;margin-top:20px;">- ${entry.linkedScripture}</p>` : ''}</body></html>`;
+      const a = document.createElement('a'); a.href = url; a.download = `${(entry.title || 'journal').replace(/\s+/g, '-')}.txt`; a.click();
+      URL.revokeObjectURL(url);
+    } else if (format === 'html' || format === 'pdf') {
+      const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>${entry.title || 'Journal Entry'}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Lora', Georgia, serif; background: #fafaf8; color: #3d3d3d; }
+  .page { max-width: 680px; margin: 0 auto; padding: 60px 50px; min-height: 100vh; background: white; box-shadow: 0 0 30px rgba(0,0,0,0.08); }
+  .header { border-bottom: 2px solid #e5e0d8; padding-bottom: 20px; margin-bottom: 30px; }
+  .app-name { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #a09080; margin-bottom: 16px; }
+  h1 { font-size: 26px; color: #2d2d2d; font-weight: 700; margin-bottom: 8px; }
+  .meta { font-size: 13px; color: #888; }
+  .mood { display: inline-block; font-size: 11px; background: #f0ede8; padding: 3px 10px; border-radius: 20px; margin-left: 10px; color: #6b6b6b; }
+  .tags { margin-top: 10px; }
+  .tag { display: inline-block; font-size: 10px; background: #e8f5f0; color: #4a7c6f; padding: 2px 8px; border-radius: 10px; margin-right: 5px; }
+  .body { font-size: 16px; line-height: 1.9; color: #3d3d3d; white-space: pre-wrap; }
+  .scripture { margin-top: 30px; padding: 16px 20px; background: #f0f7f4; border-left: 3px solid #5b8a7d; border-radius: 4px; font-style: italic; color: #4a7a6e; font-size: 14px; }
+  .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e0d8; font-size: 11px; color: #bbb; text-align: center; letter-spacing: 2px; }
+  @media print { body { background: white; } .page { box-shadow: none; padding: 40px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header">
+    <div class="app-name">あゆみ · AYUMI · WALKING WITH GOD</div>
+    <h1>${entry.title || 'Journal Entry'}</h1>
+    <div class="meta">${dateStr}${entry.mood ? `<span class="mood">${entry.mood}</span>` : ''}</div>
+    ${entry.tags && entry.tags.length > 0 ? `<div class="tags">${entry.tags.map((t: string) => `<span class="tag">#${t}</span>`).join('')}</div>` : ''}
+  </div>
+  <div class="body">${(entry.text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+  ${entry.linkedScripture ? `<div class="scripture">${entry.linkedScripture}</div>` : ''}
+  <div class="footer">AYUMI · Walking with God</div>
+</div>
+${format === 'pdf' ? '<script>window.onload=()=>{window.print();}</script>' : ''}
+</body>
+</html>`;
       const blob = new Blob([html], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `${entry.title || 'journal'}.html`; a.click();
+      if (format === 'pdf') {
+        const w = window.open(url, '_blank');
+        if (w) w.focus();
+      } else {
+        const a = document.createElement('a'); a.href = url; a.download = `${(entry.title || 'journal').replace(/\s+/g, '-')}.html`; a.click();
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 3000);
     }
   };
 
@@ -413,6 +459,7 @@ const JournalTab: React.FC<{ theme?: string }> = ({ theme = 'light' }) => {
                       <button onClick={() => shareEntry(entry)} className={`p-1.5 ${mutedText} hover:text-emerald-600`}><Share2 size={14} /></button>
                       <button onClick={() => downloadEntry(entry, 'txt')} className={`p-1.5 ${mutedText} hover:text-emerald-600`}><Download size={14} /></button>
                       <button onClick={() => downloadEntry(entry, 'html')} className={`p-1.5 text-xs ${mutedText} hover:text-emerald-600`}>HTML</button>
+                      <button onClick={() => downloadEntry(entry, 'pdf')} className={`p-1.5 text-xs ${mutedText} hover:text-red-500 font-bold`}>PDF</button>
                       <button onClick={() => deleteEntry(entry.id)} className={`p-1.5 ${mutedText} hover:text-red-500`}><Trash2 size={14} /></button>
                     </div>
                   </div>
