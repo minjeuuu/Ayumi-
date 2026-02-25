@@ -59,7 +59,7 @@ const LEVELS = [
   { level: 10, name: 'Saint', minXp: 13000, color: '#eab308' },
 ];
 
-const HodouTab: React.FC = () => {
+const HodouTab: React.FC<{ theme?: string }> = ({ theme = "light" }) => {
   const [progress, setProgress] = useState<HodouProgress>(DEFAULT_PROGRESS);
   const [activeView, setActiveView] = useState<'journey' | 'milestones' | 'stats'>('journey');
 
@@ -119,7 +119,7 @@ const HodouTab: React.FC = () => {
     <div className="flex flex-col h-full bg-gradient-to-b from-stone-900 to-stone-800 text-white">
       {/* Header */}
       <div className="p-5 text-center">
-        <div className="text-4xl mb-1">🐾</div>
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-1 mx-auto" style={{background:"linear-gradient(135deg,#5B7C75,#3A524D)"}}><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>
         <h2 className="font-bold text-lg">歩道 · Hodou</h2>
         <p className="text-stone-400 text-xs">Your Journey with God</p>
       </div>

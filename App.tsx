@@ -3,7 +3,7 @@ import Header from './components/Header';
 import LoadingScreen from './components/LoadingScreen';
 import Navigation from './components/Navigation';
 import { HomeDashboardContent, AppState, Tab } from './types';
-import { generateHomeDashboard } from './services/geminiService';
+import { generateHomeDashboard } from './services/claudeService';
 import { FALLBACK_DEVOTIONAL } from './constants';
 
 // Views
@@ -84,24 +84,34 @@ const INSTANT_FALLBACK: HomeDashboardContent = {
   }
 };
 
+const DEFAULT_APP_SETTINGS = {
+  theme: 'light' as 'light' | 'dark' | 'sepia' | 'forest' | 'ocean' | 'midnight',
+  fontSize: 18, fontFamily: 'Lora, serif', defaultBibleVersion: 'KJV',
+  language: 'en', animationsEnabled: true, footstepAnimation: true,
+  showVerseNumbers: true, dyslexiaFriendly: false, highContrast: false, largeText: false,
+};
+
 const App: React.FC = () => {
   const [content, setContent] = useState<HomeDashboardContent | null>(null);
   const [appState, setAppState] = useState<AppState>(AppState.LOADING);
   const [activeTab, setActiveTab] = useState<Tab>(Tab.HOME);
-  const [theme, setTheme] = useState<string>('light');
+  const [settings, setSettings] = useState(DEFAULT_APP_SETTINGS);
 
-  // Load theme from settings
-  useEffect(() => {
-    const loadTheme = () => {
-      const settings = localStorage.getItem('ayumi_app_settings');
-      if (settings) {
-        try { const p = JSON.parse(settings); if (p.theme) setTheme(p.theme); } catch {}
-      }
-    };
-    loadTheme();
-    window.addEventListener('storage', loadTheme);
-    return () => window.removeEventListener('storage', loadTheme);
+  const theme = settings.theme;
+
+  const loadSettings = useCallback(() => {
+    const saved = localStorage.getItem('ayumi_app_settings');
+    if (saved) {
+      try { setSettings(s => ({ ...s, ...JSON.parse(saved) })); } catch {}
+    }
   }, []);
+
+  useEffect(() => {
+    loadSettings();
+    window.addEventListener('storage', loadSettings);
+    const interval = setInterval(loadSettings, 800);
+    return () => { window.removeEventListener('storage', loadSettings); clearInterval(interval); };
+  }, [loadSettings]);
 
   const getTodayString = () => new Date().toISOString().split('T')[0];
 
@@ -140,9 +150,10 @@ const App: React.FC = () => {
   }, [appState]);
 
   const renderContent = () => {
+    const tabProps = { theme, settings };
     switch (activeTab) {
       case Tab.HOME: return <HomeTab content={content} onNavigate={setActiveTab} />;
-      case Tab.READ: return <ReadTab />;
+      case Tab.READ: return <ReadTab theme={theme} settings={settings} />;
       case Tab.DEVOTIONAL:
         return <DevotionalTab initialContent={content ? {
           title: content.devotional.title,
@@ -151,43 +162,45 @@ const App: React.FC = () => {
           prayer: content.devotional.prayerGuide,
           stepOfFaith: content.devotional.application,
           tags: []
-        } : null} />;
-      case Tab.PRAYER: return <PrayerTab />;
-      case Tab.JOURNAL: return <JournalTab />;
-      case Tab.WORSHIP: return <WorshipMusicTab />;
-      case Tab.STUDY: return <StudyTab />;
-      case Tab.PLANS: return <PlansTab />;
-      case Tab.TOPICS: return <TopicsTab />;
-      case Tab.SEARCH: return <SearchTab />;
-      case Tab.HIGHLIGHTS: return <HighlightsTab />;
-      case Tab.VERSE_IMAGE: return <VerseImageTab />;
-      case Tab.HODOU: return <HodouTab />;
-      case Tab.SAVED: return <SavedTab />;
-      case Tab.PROFILE: return <ProfileTab />;
+        } : null} theme={theme} />;
+      case Tab.PRAYER: return <PrayerTab theme={theme} />;
+      case Tab.JOURNAL: return <JournalTab theme={theme} settings={settings} />;
+      case Tab.WORSHIP: return <WorshipMusicTab theme={theme} />;
+      case Tab.STUDY: return <StudyTab theme={theme} />;
+      case Tab.PLANS: return <PlansTab theme={theme} />;
+      case Tab.TOPICS: return <TopicsTab theme={theme} />;
+      case Tab.SEARCH: return <SearchTab theme={theme} />;
+      case Tab.HIGHLIGHTS: return <HighlightsTab theme={theme} />;
+      case Tab.VERSE_IMAGE: return <VerseImageTab theme={theme} />;
+      case Tab.HODOU: return <HodouTab theme={theme} />;
+      case Tab.SAVED: return <SavedTab theme={theme} />;
+      case Tab.PROFILE: return <ProfileTab theme={theme} />;
       case Tab.SETTINGS: return <SettingsTab />;
       default: return <HomeTab content={content} onNavigate={setActiveTab} />;
     }
   };
 
-  // Theme classes
-  const themeBg = theme === 'dark'    ? 'bg-stone-900 text-stone-100'
-               : theme === 'sepia'   ? 'bg-amber-100 text-stone-800'
-               : theme === 'forest'  ? 'bg-green-50 text-stone-800'
-               : theme === 'ocean'   ? 'bg-sky-50 text-stone-800'
-               : theme === 'midnight'? 'bg-slate-950 text-slate-100'
-               :                       'bg-stone-100 text-stone-900';
+  const themeBg = theme === 'dark'     ? 'bg-stone-900 text-stone-100'
+               : theme === 'sepia'    ? 'bg-amber-100 text-stone-800'
+               : theme === 'forest'   ? 'bg-green-50 text-stone-800'
+               : theme === 'ocean'    ? 'bg-sky-50 text-stone-800'
+               : theme === 'midnight' ? 'bg-slate-950 text-slate-100'
+               :                        'bg-stone-100 text-stone-900';
 
-  const cardBg = theme === 'dark'    ? 'bg-stone-950 border-stone-800'
-              : theme === 'sepia'   ? 'bg-amber-50 border-amber-200'
-              : theme === 'forest'  ? 'bg-green-50 border-green-200'
-              : theme === 'ocean'   ? 'bg-sky-50 border-sky-100'
-              : theme === 'midnight'? 'bg-slate-900 border-slate-800'
-              :                       'bg-white border-stone-200';
+  const cardBg = theme === 'dark'     ? 'bg-stone-950 border-stone-800'
+              : theme === 'sepia'    ? 'bg-amber-50 border-amber-200'
+              : theme === 'forest'   ? 'bg-green-50 border-green-200'
+              : theme === 'ocean'    ? 'bg-sky-50 border-sky-100'
+              : theme === 'midnight' ? 'bg-slate-900 border-slate-800'
+              :                        'bg-white border-stone-200';
+
+  const fontSize = settings.fontSize;
+  const fontFamily = settings.fontFamily;
 
   if (appState === AppState.LOADING) return <LoadingScreen />;
 
   return (
-    <div className={`min-h-screen ${themeBg} font-sans`}>
+    <div className={`min-h-screen ${themeBg} font-sans`} style={{ fontSize: `${fontSize}px` }}>
       {/* ── DESKTOP SIDEBAR ── shifted content right by sidebar width */}
       <div className="hidden md:block">
         <Navigation activeTab={activeTab} onTabChange={setActiveTab} theme={theme} />

@@ -11,9 +11,9 @@ import { AppSettings } from '../../types';
 const SETTINGS_KEY = 'ayumi_app_settings';
 
 const DEFAULT_SETTINGS: AppSettings = {
-  theme: 'light',
-  fontSize: 16,
-  fontFamily: 'Georgia',
+  theme: 'light' as const,
+  fontSize: 18,
+  fontFamily: 'Lora, serif',
   defaultBibleVersion: 'KJV',
   language: 'en',
   animationsEnabled: true,
@@ -27,7 +27,7 @@ const DEFAULT_SETTINGS: AppSettings = {
 // ─────────────────────────────────────────────────────────
 // SEARCH TAB
 // ─────────────────────────────────────────────────────────
-export const SearchTab: React.FC = () => {
+export const SearchTab: React.FC<{ theme?: string }> = ({ theme = "light" }) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<{ reference: string; text: string; relevance?: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -167,7 +167,7 @@ export const SearchTab: React.FC = () => {
 // ─────────────────────────────────────────────────────────
 // PROFILE TAB
 // ─────────────────────────────────────────────────────────
-export const ProfileTab: React.FC = () => {
+export const ProfileTab: React.FC<{ theme?: string }> = ({ theme = "light" }) => {
   const [name, setName] = useState('');
   const [editingName, setEditingName] = useState(false);
   const [tempName, setTempName] = useState('');
@@ -209,7 +209,7 @@ export const ProfileTab: React.FC = () => {
     <div className="flex flex-col h-full bg-stone-50">
       <div className="flex-1 overflow-y-auto pb-24">
         <div className="bg-gradient-to-b from-stone-800 to-stone-700 text-white p-8 text-center">
-          <div className="w-20 h-20 rounded-full bg-stone-600 border-2 border-stone-400 flex items-center justify-center mx-auto mb-4 text-3xl">🙏</div>
+          <div className="w-20 h-20 rounded-full bg-stone-600 border-2 border-stone-400 flex items-center justify-center mx-auto mb-4"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
           {editingName ? (
             <div className="flex items-center justify-center space-x-2">
               <input value={tempName} onChange={e => setTempName(e.target.value)}
@@ -328,6 +328,7 @@ export const SettingsTab: React.FC = () => {
     { id: 'sepia' as const, label: 'Sepia', bg: '#fdf6e3', dot: '#5c4b3b' },
     { id: 'forest' as const, label: 'Forest', bg: '#f0fdf4', dot: '#14532d' },
     { id: 'ocean' as const, label: 'Ocean', bg: '#eff6ff', dot: '#1e3a5f' },
+    { id: 'midnight' as const, label: 'Midnight', bg: '#0f172a', dot: '#94a3b8' },
   ];
 
   return (
@@ -343,7 +344,7 @@ export const SettingsTab: React.FC = () => {
         <Section id="appearance" title="Appearance" icon={<Palette size={18} />}>
           <div>
             <p className="text-xs text-stone-400 mb-2 uppercase tracking-wider">Theme</p>
-            <div className="grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
               {THEMES.map(t => (
                 <button key={t.id} onClick={() => updateSetting('theme', t.id)}
                   className={`flex flex-col items-center p-2 rounded-lg border-2 transition-all ${settings.theme === t.id ? 'border-emerald-500' : 'border-stone-100'}`}
@@ -365,7 +366,7 @@ export const SettingsTab: React.FC = () => {
             <p className="text-xs text-stone-400 mb-2 uppercase tracking-wider">Font Family</p>
             <select value={settings.fontFamily} onChange={e => updateSetting('fontFamily', e.target.value)}
               className="w-full text-sm border border-stone-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-stone-400">
-              {FONT_FAMILIES.map(f => <option key={f} value={f}>{f}</option>)}
+              {FONT_FAMILIES.map(f => <option key={f.name} value={f.value}>{f.name}</option>)}
             </select>
           </div>
         </Section>
@@ -398,11 +399,11 @@ export const SettingsTab: React.FC = () => {
         </Section>
 
         <div className="bg-white rounded-xl border border-stone-100 shadow-sm p-5 text-center">
-          <div className="text-3xl mb-2">🐾</div>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2" style={{background: "linear-gradient(135deg, #5B7C75 0%, #3A524D 100%)"}}><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H15"/><path d="M15 8v10"/></svg></div>
           <h3 className="font-bold text-stone-800">あゆみ · Ayumi</h3>
           <p className="text-xs text-stone-400 mt-1">Walking with God</p>
           <p className="text-xs text-stone-300 mt-3">Version 2.0.0 · Powered by Claude AI</p>
-          <p className="text-xs text-stone-300">Built with love for God's people 🙏</p>
+          <p className="text-xs text-stone-300">Built with love for God's people</p>
         </div>
       </div>
     </div>

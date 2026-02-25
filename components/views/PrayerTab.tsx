@@ -16,7 +16,7 @@ const CATEGORIES: { id: PrayerCategory; label: string; icon: any }[] = [
   { id: 'World', label: 'World', icon: Globe },
 ];
 
-const PrayerTab: React.FC = () => {
+const PrayerTab: React.FC<{ theme?: string }> = ({ theme = 'light' }) => {
   // --- State ---
   const [viewMode, setViewMode] = useState<'canvas' | 'list'>('canvas');
   const [quietMode, setQuietMode] = useState(false);

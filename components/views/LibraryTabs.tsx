@@ -6,7 +6,7 @@ import { COMPREHENSIVE_BIBLE_VERSIONS } from '../../constants';
 // ─────────────────────────────────────────────────────────
 // STUDY TAB
 // ─────────────────────────────────────────────────────────
-export const StudyTab: React.FC = () => {
+export const StudyTab: React.FC<{ theme?: string }> = ({ theme = "light" }) => {
   const [activeTool, setActiveTool] = useState<string | null>(null);
   const [verseInput, setVerseInput] = useState('John 3:16');
   const [result, setResult] = useState('');
@@ -273,7 +273,7 @@ const DEFAULT_PLANS = [
   { id: '8', name: 'Sermon on the Mount', duration: '14 days', daysTotal: 14, daysCompleted: 0, books: ['Matthew 5-7'], active: false, description: "Deep study of Jesus' greatest sermon." },
 ];
 
-export const PlansTab: React.FC = () => {
+export const PlansTab: React.FC<{ theme?: string }> = ({ theme = "light" }) => {
   const [plans, setPlans] = useState(DEFAULT_PLANS);
   const [selectedPlan, setSelectedPlan] = useState<typeof DEFAULT_PLANS[0] | null>(null);
   const [todaysReading, setTodaysReading] = useState('');
@@ -424,23 +424,23 @@ export const PlansTab: React.FC = () => {
 // TOPICS TAB
 // ─────────────────────────────────────────────────────────
 const TOPICS = [
-  { name: 'Grace', verses: 342, color: 'bg-blue-50 text-blue-700 border-blue-200', emoji: '✨' },
-  { name: 'Forgiveness', verses: 189, color: 'bg-green-50 text-green-700 border-green-200', emoji: '🕊️' },
-  { name: 'Hope', verses: 267, color: 'bg-purple-50 text-purple-700 border-purple-200', emoji: '🌟' },
-  { name: 'Love', verses: 551, color: 'bg-red-50 text-red-700 border-red-200', emoji: '❤️' },
+  { name: 'Grace', verses: 342, color: 'bg-blue-50 text-blue-700 border-blue-200', icon: 'sparkles' },
+  { name: 'Forgiveness', verses: 189, color: 'bg-green-50 text-green-700 border-green-200', icon: 'bird' },
+  { name: 'Hope', verses: 267, color: 'bg-purple-50 text-purple-700 border-purple-200', icon: 'star' },
+  { name: 'Love', verses: 551, color: 'bg-red-50 text-red-700 border-red-200', icon: 'heart' },
   { name: 'Peace', verses: 234, color: 'bg-cyan-50 text-cyan-700 border-cyan-200', emoji: '☮️' },
   { name: 'Anxiety & Fear', verses: 127, color: 'bg-amber-50 text-amber-700 border-amber-200', emoji: '🛡️' },
-  { name: 'Salvation', verses: 412, color: 'bg-emerald-50 text-emerald-700 border-emerald-200', emoji: '🙌' },
-  { name: 'Jesus Christ', verses: 1243, color: 'bg-rose-50 text-rose-700 border-rose-200', emoji: '✝️' },
+  { name: 'Salvation', verses: 412, color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: 'hands' },
+  { name: 'Jesus Christ', verses: 1243, color: 'bg-rose-50 text-rose-700 border-rose-200', icon: 'cross' },
   { name: 'Faith', verses: 623, color: 'bg-sky-50 text-sky-700 border-sky-200', emoji: '🏔️' },
-  { name: 'Prayer', verses: 378, color: 'bg-teal-50 text-teal-700 border-teal-200', emoji: '🙏' },
-  { name: 'Wisdom', verses: 445, color: 'bg-indigo-50 text-indigo-700 border-indigo-200', emoji: '📖' },
-  { name: 'Worship', verses: 291, color: 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200', emoji: '🎵' },
+  { name: 'Prayer', verses: 378, color: 'bg-teal-50 text-teal-700 border-teal-200', icon: 'prayer' },
+  { name: 'Wisdom', verses: 445, color: 'bg-indigo-50 text-indigo-700 border-indigo-200', icon: 'book' },
+  { name: 'Worship', verses: 291, color: 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200', icon: 'music' },
   { name: 'Marriage', verses: 156, color: 'bg-pink-50 text-pink-700 border-pink-200', emoji: '💍' },
   { name: 'Parenting', verses: 89, color: 'bg-orange-50 text-orange-700 border-orange-200', emoji: '👨‍👩‍👧' },
-  { name: 'Suffering', verses: 203, color: 'bg-stone-50 text-stone-700 border-stone-300', emoji: '💧' },
-  { name: 'Healing', verses: 167, color: 'bg-lime-50 text-lime-700 border-lime-200', emoji: '🌿' },
-  { name: 'Holy Spirit', verses: 298, color: 'bg-violet-50 text-violet-700 border-violet-200', emoji: '🔥' },
+  { name: 'Suffering', verses: 203, color: 'bg-stone-50 text-stone-700 border-stone-300', icon: 'droplet' },
+  { name: 'Healing', verses: 167, color: 'bg-lime-50 text-lime-700 border-lime-200', icon: 'leaf' },
+  { name: 'Holy Spirit', verses: 298, color: 'bg-violet-50 text-violet-700 border-violet-200', icon: 'flame' },
   { name: 'Heaven', verses: 318, color: 'bg-blue-50 text-blue-800 border-blue-300', emoji: '☁️' },
   { name: 'Sin & Repentance', verses: 445, color: 'bg-stone-50 text-stone-800 border-stone-300', emoji: '🔄' },
   { name: 'Money & Wealth', verses: 214, color: 'bg-yellow-50 text-yellow-700 border-yellow-200', emoji: '💰' },
@@ -450,7 +450,7 @@ const TOPICS = [
   { name: 'Work & Purpose', verses: 175, color: 'bg-amber-50 text-amber-800 border-amber-200', emoji: '⚙️' },
 ];
 
-export const TopicsTab: React.FC = () => {
+export const TopicsTab: React.FC<{ theme?: string }> = ({ theme = "light" }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTopic, setSelectedTopic] = useState<typeof TOPICS[0] | null>(null);
   const [topicVerses, setTopicVerses] = useState('');
@@ -522,7 +522,7 @@ export const TopicsTab: React.FC = () => {
             <div className="grid grid-cols-2 gap-2">
               {filteredTopics.map(topic => (
                 <button key={topic.name} onClick={() => { setSelectedTopic(topic); loadTopicVerses(topic.name); }} className={`px-3 py-3 ${topic.color} border rounded-xl text-left hover:shadow-md active:scale-95 transition-all`}>
-                  <div className="text-lg mb-1">{topic.emoji}</div>
+                  <div className="text-lg mb-1"><span className="text-xs font-bold">{topic.name[0]}</span></div>
                   <div className="font-bold text-sm">{topic.name}</div>
                   <div className="text-xs opacity-60 mt-0.5">{topic.verses} verses</div>
                 </button>
@@ -556,7 +556,7 @@ const DEFAULT_SAVED: SavedItem[] = [
   { id: 's4', type: 'verse', title: 'Romans 8:28', content: 'And we know that in all things God works for the good of those who love him, who have been called according to his purpose.', reference: 'Romans 8:28', category: 'Providence', dateAdded: new Date().toISOString() },
 ];
 
-export const SavedTab: React.FC = () => {
+export const SavedTab: React.FC<{ theme?: string }> = ({ theme = "light" }) => {
   const [saved, setSaved] = useState<SavedItem[]>([]);
   const [filterType, setFilterType] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -597,7 +597,7 @@ export const SavedTab: React.FC = () => {
   const types = ['all', 'verse', 'devotional', 'prayer', 'note'];
   const counts = { all: saved.length, verse: saved.filter(s => s.type === 'verse').length, devotional: saved.filter(s => s.type === 'devotional').length, prayer: saved.filter(s => s.type === 'prayer').length, note: saved.filter(s => s.type === 'note').length };
 
-  const typeIcon: Record<string, string> = { verse: '📖', devotional: '☀️', prayer: '🙏', note: '✍️' };
+  const typeIcon: Record<string, string> = { verse: 'V', devotional: 'D', prayer: 'P', note: 'N' };
   const typeColor: Record<string, string> = { verse: 'bg-blue-50 text-blue-700', devotional: 'bg-amber-50 text-amber-700', prayer: 'bg-pink-50 text-pink-700', note: 'bg-green-50 text-green-700' };
 
   return (
@@ -647,7 +647,7 @@ export const SavedTab: React.FC = () => {
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center space-x-2">
                       <span className={`text-xs px-2 py-0.5 rounded-full capitalize font-medium ${typeColor[item.type] || 'bg-stone-50 text-stone-600'}`}>
-                        {typeIcon[item.type]} {item.type}
+                        <span className="text-xs font-bold">{typeIcon[item.type] || item.type[0].toUpperCase()}</span> {item.type}
                       </span>
                       <span className="text-xs text-stone-400">{item.category}</span>
                     </div>

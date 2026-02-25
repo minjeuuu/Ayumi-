@@ -145,7 +145,7 @@ const VerseImageTab: React.FC<{ theme?: string }> = ({ theme = 'light' }) => {
       const parsed = JSON.parse(clean);
       setVerseText(parsed.text);
       setVerseRef(parsed.reference);
-      notify('✨ New verse generated!');
+      notify('New verse generated!');
     } catch {}
     setIsGenerating(false);
   };
@@ -159,7 +159,7 @@ const VerseImageTab: React.FC<{ theme?: string }> = ({ theme = 'light' }) => {
       const parsed = JSON.parse(clean);
       setVerseText(parsed.text);
       setVerseRef(parsed.reference);
-      notify(`✨ Verse about "${themeWord}" found!`);
+      notify(`Verse about "${themeWord}" found!`);
     } catch {}
     setIsGenerating(false);
   };

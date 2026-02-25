@@ -6,9 +6,10 @@ import { callClaude } from '../../services/claudeService';
 
 interface DevotionalTabProps {
   initialContent: DevotionalContent | null;
+  theme?: string;
 }
 
-const DevotionalTab: React.FC<DevotionalTabProps> = ({ initialContent }) => {
+const DevotionalTab: React.FC<DevotionalTabProps> = ({ initialContent, theme = 'light' }) => {
   const [content, setContent] = useState<DevotionalContent | null>(initialContent);
   const [loading, setLoading] = useState(false);
   const [topic, setTopic] = useState('');

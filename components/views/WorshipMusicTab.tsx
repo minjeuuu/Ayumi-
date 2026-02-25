@@ -3,7 +3,7 @@ import { WORSHIP_ARTISTS, POPULAR_WORSHIP_SONGS } from '../../constants';
 import { Music, Play, Search, Heart, Share2, ExternalLink, X, List, ChevronDown, Shuffle, SkipForward, SkipBack } from 'lucide-react';
 import { callClaude } from '../../services/claudeService';
 
-const WorshipMusicTab: React.FC = () => {
+const WorshipMusicTab: React.FC<{ theme?: string }> = ({ theme = "light" }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -132,7 +132,7 @@ const WorshipMusicTab: React.FC = () => {
   };
 
   const shareContent = async (song: any) => {
-    const text = `🎵 ${song.title} by ${song.artist}\n\nListening on Ayumi - Walking with God`;
+    const text = `${song.title} by ${song.artist}\n\nListening on Ayumi - Walking with God`;
     if (navigator.share) await navigator.share({ text });
     else { await navigator.clipboard.writeText(text); showNotif('Copied to clipboard'); }
   };

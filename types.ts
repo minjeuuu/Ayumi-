@@ -274,7 +274,7 @@ export enum AppState {
 }
 
 export interface AppSettings {
-  theme: 'light' | 'dark' | 'sepia' | 'forest' | 'ocean';
+  theme: 'light' | 'dark' | 'sepia' | 'forest' | 'ocean' | 'midnight';
   fontSize: number;
   fontFamily: string;
   defaultBibleVersion: string;

@@ -5,7 +5,7 @@ import { HIGHLIGHT_COLORS } from '../../constants';
 
 const STORAGE_KEY = 'ayumi_highlights';
 
-const HighlightsTab: React.FC = () => {
+const HighlightsTab: React.FC<{ theme?: string }> = ({ theme = "light" }) => {
   const [highlights, setHighlights] = useState<Highlight[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedColor, setSelectedColor] = useState('all');
