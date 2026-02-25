@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import DevotionalCard from '../DevotionalCard';
 import { DevotionalContent } from '../../types';
 import { Sparkles, RefreshCw, Share2, Bookmark, Download } from 'lucide-react';
-
-const BACKEND_URL = window.location.origin;
+import { callClaude } from '../../services/claudeService';
 
 interface DevotionalTabProps {
   initialContent: DevotionalContent | null;
@@ -25,28 +24,29 @@ const DevotionalTab: React.FC<DevotionalTabProps> = ({ initialContent }) => {
     setSaved(false);
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/devotional/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(topic),
-      });
+      const prompt = `Create a short Christian devotional on the topic of "${topic}". Return ONLY a JSON object with these exact fields:
+{
+  "title": "devotional title",
+  "scripture": { "text": "verse text", "reference": "Book Chapter:Verse (Version)" },
+  "reflection": "2-3 paragraphs of devotional reflection",
+  "prayer": "a prayer paragraph",
+  "stepOfFaith": "a practical step of faith for today",
+  "tags": ["${topic.toLowerCase()}", "devotional"]
+}`;
 
-      if (response.ok) {
-        const data = await response.json();
-        setContent(data);
-      } else {
-        throw new Error('Backend error');
-      }
+      const response = await callClaude(prompt);
+      const clean = response.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+      setContent(parsed);
     } catch (error) {
       console.error('Devotional generation error:', error);
-      // Use fallback
       setContent({
         title: `Walking in ${topic}`,
         scripture: {
           text: "Trust in the Lord with all your heart, and do not lean on your own understanding.",
           reference: "Proverbs 3:5 (ESV)"
         },
-        reflection: `God invites us to explore the depths of ${topic.toLowerCase()} through His Word. In every season of life, His character remains the anchor for our souls. As we meditate on ${topic.toLowerCase()}, we discover that God's nature never changes - He is the same yesterday, today, and forever. Let us draw near to Him and find the truth that transforms our hearts.`,
+        reflection: `God invites us to explore the depths of ${topic.toLowerCase()} through His Word. In every season of life, His character remains the anchor for our souls. As we meditate on ${topic.toLowerCase()}, we discover that God's nature never changes - He is the same yesterday, today, and forever.`,
         prayer: `Lord, teach me more about ${topic.toLowerCase()}. Open my eyes to see Your truth in this area of my life. Help me to walk in the fullness of what You have for me. Amen.`,
         stepOfFaith: `Spend 5 minutes in silence, asking God to reveal a deeper understanding of ${topic.toLowerCase()} in your life today.`,
         tags: [topic.toLowerCase(), 'devotional', 'daily']
