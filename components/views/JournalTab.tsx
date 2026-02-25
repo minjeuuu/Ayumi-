@@ -1,418 +1,425 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { PenLine, Plus, Trash2, ChevronLeft, Calendar, Tag, Save, X, Search, BookOpen } from 'lucide-react';
+import { JournalEntry } from '../../types';
+import { FONT_FAMILIES, HIGHLIGHT_COLORS } from '../../constants';
+import { PenLine, Plus, X, Save, Tag, Trash2, Share2, Download, Book, Search, ChevronLeft, Palette, Type, Image, BookOpen, Heart, Star } from 'lucide-react';
+import { callClaude } from '../../services/claudeService';
 
-const BACKEND_URL = window.location.origin;
-const STORAGE_KEY = 'ayumi_journal_entries';
+const JOURNAL_COVERS = [
+  // Solid colors
+  { id: 'linen', label: 'Linen', style: { background: '#f5f0eb' }, textColor: '#44403c', category: 'minimal' },
+  { id: 'sage', label: 'Sage', style: { background: '#7c9a7e' }, textColor: '#fff', category: 'minimal' },
+  { id: 'stone', label: 'Stone', style: { background: '#78716c' }, textColor: '#fff', category: 'minimal' },
+  { id: 'midnight', label: 'Midnight', style: { background: '#1e293b' }, textColor: '#e2e8f0', category: 'minimal' },
+  { id: 'rose', label: 'Rose', style: { background: '#fda4af' }, textColor: '#9f1239', category: 'minimal' },
+  { id: 'sky', label: 'Sky', style: { background: '#bae6fd' }, textColor: '#0c4a6e', category: 'minimal' },
+  { id: 'gold', label: 'Gold', style: { background: '#fde68a' }, textColor: '#78350f', category: 'minimal' },
+  { id: 'lavender', label: 'Lavender', style: { background: '#ddd6fe' }, textColor: '#4c1d95', category: 'minimal' },
+  // Gradients
+  { id: 'sunrise', label: 'Sunrise', style: { background: 'linear-gradient(135deg, #ff9a8b 0%, #fecfef 50%, #ffecd2 100%)' }, textColor: '#7c2d12', category: 'gradient' },
+  { id: 'ocean', label: 'Ocean', style: { background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }, textColor: '#fff', category: 'gradient' },
+  { id: 'forest', label: 'Forest', style: { background: 'linear-gradient(135deg, #134E5E 0%, #71B280 100%)' }, textColor: '#fff', category: 'gradient' },
+  { id: 'dusk', label: 'Dusk', style: { background: 'linear-gradient(135deg, #2D3561 0%, #C05C7E 100%)' }, textColor: '#fff', category: 'gradient' },
+  { id: 'golden-hour', label: 'Golden Hour', style: { background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #fda085 100%)' }, textColor: '#fff', category: 'gradient' },
+  { id: 'holy', label: 'Holy Light', style: { background: 'linear-gradient(135deg, #fff9c4 0%, #fff3e0 50%, #ffe082 100%)' }, textColor: '#5d4037', category: 'gradient' },
+  { id: 'heavens', label: 'Heavens', style: { background: 'linear-gradient(180deg, #1a237e 0%, #283593 30%, #1565C0 60%, #87CEEB 100%)' }, textColor: '#fff', category: 'gradient' },
+  { id: 'spring', label: 'Spring', style: { background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)' }, textColor: '#1a1a1a', category: 'gradient' },
+  // Patterned / Textured
+  { id: 'paper', label: 'Paper', style: { background: '#f9f3e9', backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 27px, #e8dcc8 28px)' }, textColor: '#44403c', category: 'pattern' },
+  { id: 'linen-texture', label: 'Linen', style: { background: '#f3ede3', backgroundImage: 'repeating-linear-gradient(45deg, #e8dcc8 0px, #e8dcc8 1px, transparent 0px, transparent 50%)' }, textColor: '#44403c', category: 'pattern' },
+  { id: 'cross', label: 'Faith', style: { background: '#1a237e', backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)' }, textColor: '#fff', category: 'pattern' },
+  // Anime/Illustration style (simulated with gradients + pseudo elements)
+  { id: 'cherry', label: 'Cherry Blossom', style: { background: 'linear-gradient(135deg, #ffeef8 0%, #ffe0f0 50%, #ffd6e7 100%)' }, textColor: '#7c2d6e', category: 'anime' },
+  { id: 'starlight', label: 'Starlight', style: { background: 'linear-gradient(135deg, #0d0d2b 0%, #1a1a4e 50%, #2d2b7f 100%)' }, textColor: '#e0d7ff', category: 'anime' },
+  { id: 'meadow', label: 'Meadow Walk', style: { background: 'linear-gradient(180deg, #87CEEB 0%, #90EE90 60%, #228B22 100%)' }, textColor: '#fff', category: 'anime' },
+  { id: 'autumn', label: 'Autumn Path', style: { background: 'linear-gradient(135deg, #ff8c00 0%, #ff6347 50%, #8b4513 100%)' }, textColor: '#fff', category: 'anime' },
+  // Scripture-themed
+  { id: 'grace', label: 'Grace', style: { background: 'linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%)' }, textColor: '#276749', category: 'faith' },
+  { id: 'covenant', label: 'Covenant', style: { background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' }, textColor: '#78350f', category: 'faith' },
+  { id: 'glory', label: 'Glory', style: { background: 'linear-gradient(135deg, #fffde7 0%, #fff9c4 50%, #ffd54f 100%)' }, textColor: '#4a3500', category: 'faith' },
+  { id: 'shepherd', label: 'The Shepherd', style: { background: 'linear-gradient(135deg, #e8f5e9 0%, #a5d6a7 100%)' }, textColor: '#1b5e20', category: 'faith' },
+];
 
-interface JournalEntryData {
-  id: string;
-  date: string;
-  title: string;
-  text: string;
-  tags: string[];
-  linkedScripture?: string;
-  mood?: string;
-}
+const JOURNAL_MOODS = ['Grateful', 'Peaceful', 'Seeking', 'Joyful', 'Struggling', 'Hopeful', 'Reflective', 'Worshipful', 'Convicted', 'Restored', 'Anxious', 'Bold'];
+const PAGE_STYLES = ['lined', 'grid', 'dot', 'blank', 'scripture'];
 
-const JournalTab: React.FC = () => {
-  const [entries, setEntries] = useState<JournalEntryData[]>([]);
-  const [view, setView] = useState<'list' | 'write' | 'read'>('list');
-  const [currentEntry, setCurrentEntry] = useState<JournalEntryData | null>(null);
+const JournalTab: React.FC<{ theme?: string }> = ({ theme = 'light' }) => {
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentEntry, setCurrentEntry] = useState<Partial<JournalEntry>>({});
+  const [selectedCover, setSelectedCover] = useState(JOURNAL_COVERS[0]);
+  const [showCoverPicker, setShowCoverPicker] = useState(false);
+  const [showFontPicker, setShowFontPicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [editTitle, setEditTitle] = useState('');
-  const [editText, setEditText] = useState('');
-  const [editTags, setEditTags] = useState<string[]>([]);
-  const [editMood, setEditMood] = useState('');
-  const [editScripture, setEditScripture] = useState('');
-  const [tagInput, setTagInput] = useState('');
+  const [selectedTag, setSelectedTag] = useState('');
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [pageStyle, setPageStyle] = useState('lined');
+  const [coverCategory, setCoverCategory] = useState('all');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const moods = ['Grateful', 'Peaceful', 'Joyful', 'Reflective', 'Hopeful', 'Burdened', 'Seeking', 'Praising'];
-  const quickTags = ['Prayer', 'Devotional', 'Insight', 'Testimony', 'Promise', 'Confession', 'Worship', 'Growth'];
+  const isDark = theme === 'dark';
+  const cardBg = isDark ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200';
+  const textColor = isDark ? 'text-stone-100' : 'text-stone-800';
+  const mutedText = isDark ? 'text-stone-400' : 'text-stone-500';
+  const bg = isDark ? 'bg-stone-950' : 'bg-stone-50';
 
-  // Load entries from localStorage + backend
   useEffect(() => {
-    loadEntries();
+    const saved = localStorage.getItem('ayumi_journal');
+    if (saved) setEntries(JSON.parse(saved));
   }, []);
 
-  const loadEntries = async () => {
-    // Load from localStorage first
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        setEntries(JSON.parse(stored));
-      } catch (e) {
-        console.error('Failed to parse journal entries');
-      }
-    }
-
-    // Also try backend
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/journal/entries`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.entries && data.entries.length > 0) {
-          setEntries(prev => {
-            const merged = [...prev];
-            data.entries.forEach((entry: JournalEntryData) => {
-              if (!merged.find(e => e.id === entry.id)) {
-                merged.push(entry);
-              }
-            });
-            return merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-          });
-        }
-      }
-    } catch (e) {
-      // Backend not available, use localStorage only
-    }
-  };
-
-  const saveEntries = (updatedEntries: JournalEntryData[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
-    setEntries(updatedEntries);
+  const saveEntries = (e: JournalEntry[]) => {
+    setEntries(e);
+    localStorage.setItem('ayumi_journal', JSON.stringify(e));
   };
 
   const startNewEntry = () => {
-    setEditTitle('');
-    setEditText('');
-    setEditTags([]);
-    setEditMood('');
-    setEditScripture('');
-    setCurrentEntry(null);
-    setView('write');
-    setTimeout(() => textareaRef.current?.focus(), 100);
+    setCurrentEntry({
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      title: '',
+      text: '',
+      tags: [],
+      mood: '',
+      coverStyle: JOURNAL_COVERS[0].id,
+      fontFamily: 'Lora, serif',
+      fontSize: 16,
+      textColor: '#44403c',
+      backgroundColor: '#ffffff',
+    });
+    setSelectedCover(JOURNAL_COVERS[0]);
+    setIsEditing(true);
   };
 
-  const editExistingEntry = (entry: JournalEntryData) => {
-    setEditTitle(entry.title);
-    setEditText(entry.text);
-    setEditTags(entry.tags);
-    setEditMood(entry.mood || '');
-    setEditScripture(entry.linkedScripture || '');
-    setCurrentEntry(entry);
-    setView('write');
-  };
-
-  const saveEntry = async () => {
-    if (!editText.trim() && !editTitle.trim()) return;
-
-    setIsSaving(true);
-    const entry: JournalEntryData = {
-      id: currentEntry?.id || `j_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      date: currentEntry?.date || new Date().toISOString(),
-      title: editTitle || `Journal Entry - ${new Date().toLocaleDateString()}`,
-      text: editText,
-      tags: editTags,
-      linkedScripture: editScripture || undefined,
-      mood: editMood || undefined,
+  const saveEntry = () => {
+    if (!currentEntry.text?.trim()) return;
+    const entry: JournalEntry = {
+      id: currentEntry.id || Date.now().toString(),
+      date: currentEntry.date || new Date().toISOString(),
+      title: currentEntry.title || `Entry - ${new Date().toLocaleDateString()}`,
+      text: currentEntry.text || '',
+      tags: currentEntry.tags || [],
+      linkedScripture: currentEntry.linkedScripture,
+      mood: currentEntry.mood,
+      coverStyle: selectedCover.id,
+      fontFamily: currentEntry.fontFamily,
+      fontSize: currentEntry.fontSize,
+      textColor: currentEntry.textColor,
+      backgroundColor: currentEntry.backgroundColor,
     };
-
-    let updated: JournalEntryData[];
-    if (currentEntry) {
-      updated = entries.map(e => e.id === currentEntry.id ? entry : e);
+    const existing = entries.findIndex(e => e.id === entry.id);
+    let updated: JournalEntry[];
+    if (existing >= 0) {
+      updated = [...entries];
+      updated[existing] = entry;
     } else {
       updated = [entry, ...entries];
     }
-
     saveEntries(updated);
-
-    // Try to save to backend
-    try {
-      await fetch(`${BACKEND_URL}/api/journal/entries`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(entry),
-      });
-    } catch (e) {
-      // Backend save failed, localStorage is our backup
-    }
-
-    setIsSaving(false);
-    setView('list');
+    setIsEditing(false);
+    setCurrentEntry({});
   };
 
   const deleteEntry = (id: string) => {
-    const updated = entries.filter(e => e.id !== id);
-    saveEntries(updated);
+    if (confirm('Delete this entry?')) saveEntries(entries.filter(e => e.id !== id));
+  };
 
-    // Try backend delete
+  const editEntry = (entry: JournalEntry) => {
+    setCurrentEntry(entry);
+    const cover = JOURNAL_COVERS.find(c => c.id === entry.coverStyle) || JOURNAL_COVERS[0];
+    setSelectedCover(cover);
+    setIsEditing(true);
+  };
+
+  const generateWithAI = async () => {
+    if (!aiPrompt.trim()) return;
+    setIsGenerating(true);
     try {
-      fetch(`${BACKEND_URL}/api/journal/entries/${id}`, { method: 'DELETE' });
-    } catch (e) {}
+      const text = await callClaude(
+        `Write a personal journal entry for a Christian${aiPrompt ? ` about: ${aiPrompt}` : ''}. Make it thoughtful, vulnerable, and scripture-connected. First person, 150-250 words.`,
+        'You are a devotional writer helping someone journal their faith journey.'
+      );
+      setCurrentEntry(prev => ({ ...prev, text: (prev.text || '') + '\n\n' + text }));
+    } catch (e) {
+      alert('Could not generate. Please check your connection.');
+    }
+    setIsGenerating(false);
+    setAiPrompt('');
+  };
 
-    if (view === 'write' || view === 'read') {
-      setView('list');
+  const shareEntry = async (entry: JournalEntry) => {
+    const text = `${entry.title}\n${new Date(entry.date).toLocaleDateString()}\n\n${entry.text}\n${entry.linkedScripture ? '\n- ' + entry.linkedScripture : ''}`;
+    if (navigator.share) await navigator.share({ title: entry.title || 'Journal Entry', text });
+    else { navigator.clipboard.writeText(text); alert('Copied to clipboard!'); }
+  };
+
+  const downloadEntry = (entry: JournalEntry, format: 'txt' | 'pdf' | 'html') => {
+    const text = `${entry.title}\n${new Date(entry.date).toLocaleDateString()}\n\n${entry.text}`;
+    if (format === 'txt') {
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `${entry.title || 'journal'}.txt`; a.click();
+    } else if (format === 'html') {
+      const html = `<!DOCTYPE html><html><head><title>${entry.title}</title><style>body{font-family:serif;max-width:700px;margin:40px auto;padding:20px;line-height:1.8;}</style></head><body><h1>${entry.title}</h1><p style="color:#666">${new Date(entry.date).toLocaleDateString()}</p><hr/><div>${entry.text.replace(/\n/g, '<br/>')}</div>${entry.linkedScripture ? `<p style="color:#5B7C75;font-style:italic;margin-top:20px;">- ${entry.linkedScripture}</p>` : ''}</body></html>`;
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `${entry.title || 'journal'}.html`; a.click();
     }
   };
 
-  const addTag = (tag: string) => {
-    if (tag.trim() && !editTags.includes(tag.trim())) {
-      setEditTags([...editTags, tag.trim()]);
+  const filteredEntries = entries.filter(e => {
+    if (searchQuery && !e.text.toLowerCase().includes(searchQuery.toLowerCase()) && !(e.title || '').toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (selectedTag && !e.tags.includes(selectedTag)) return false;
+    return true;
+  });
+
+  const allTags = [...new Set(entries.flatMap(e => e.tags))];
+  const filteredCovers = coverCategory === 'all' ? JOURNAL_COVERS : JOURNAL_COVERS.filter(c => c.category === coverCategory);
+
+  const getPageStyle = () => {
+    switch (pageStyle) {
+      case 'lined': return { backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 31px, ${isDark ? '#374151' : '#e5e7eb'} 32px)` };
+      case 'grid': return { backgroundImage: `linear-gradient(${isDark ? '#374151' : '#e5e7eb'} 1px, transparent 1px), linear-gradient(90deg, ${isDark ? '#374151' : '#e5e7eb'} 1px, transparent 1px)`, backgroundSize: '32px 32px' };
+      case 'dot': return { backgroundImage: `radial-gradient(circle, ${isDark ? '#4b5563' : '#d1d5db'} 1px, transparent 1px)`, backgroundSize: '20px 20px' };
+      case 'blank': return {};
+      case 'scripture': return { backgroundImage: `repeating-linear-gradient(0deg, transparent, transparent 39px, ${isDark ? '#374151' : '#d1fae5'} 40px)` };
+      default: return {};
     }
-    setTagInput('');
   };
 
-  const removeTag = (tag: string) => {
-    setEditTags(editTags.filter(t => t !== tag));
-  };
-
-  const filteredEntries = searchQuery
-    ? entries.filter(e =>
-        e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        e.text.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        e.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
-    : entries;
-
-  const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays} days ago`;
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
-  };
-
-  // WRITE VIEW
-  if (view === 'write') {
+  if (isEditing) {
     return (
-      <div className="pb-24 px-4 pt-4 fade-in flex flex-col h-full">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => setView('list')} className="flex items-center text-stone-500 hover:text-primary">
-            <ChevronLeft size={20} className="mr-1" /> Back
-          </button>
-          <button
-            onClick={saveEntry}
-            disabled={isSaving || (!editText.trim() && !editTitle.trim())}
-            className="flex items-center px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium disabled:opacity-50"
-          >
-            {isSaving ? (
-              <div className="animate-spin h-4 w-4 border-2 border-white/50 border-t-white rounded-full mr-2"></div>
-            ) : (
-              <Save size={16} className="mr-2" />
-            )}
-            Save
-          </button>
-        </div>
-
-        {/* Title */}
-        <input
-          type="text"
-          value={editTitle}
-          onChange={(e) => setEditTitle(e.target.value)}
-          placeholder="Entry title..."
-          className="text-xl font-serif font-bold text-stone-800 bg-transparent border-none focus:outline-none mb-2 w-full placeholder-stone-300"
-        />
-
-        {/* Date & Mood */}
-        <div className="flex items-center gap-2 mb-4 text-xs text-stone-400">
-          <Calendar size={14} />
-          <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
-        </div>
-
-        {/* Mood selector */}
-        <div className="mb-4">
-          <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-2">How is your heart today?</p>
-          <div className="flex flex-wrap gap-2">
-            {moods.map(mood => (
-              <button
-                key={mood}
-                onClick={() => setEditMood(editMood === mood ? '' : mood)}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  editMood === mood
-                    ? 'bg-primary text-white'
-                    : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
-                }`}
-              >
-                {mood}
+      <div className={`min-h-screen ${bg} pb-20 md:pl-20`}>
+        {/* Journal Editor Header */}
+        <div className="fixed top-16 left-0 right-0 md:left-20 z-20 bg-white border-b border-stone-200 px-4 py-2">
+          <div className="max-w-2xl mx-auto flex items-center gap-2">
+            <button onClick={() => setIsEditing(false)} className="p-2 text-stone-400 hover:text-stone-700"><ChevronLeft size={20} /></button>
+            <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar">
+              <button onClick={() => setShowCoverPicker(!showCoverPicker)} className="flex items-center gap-1 px-3 py-1.5 bg-stone-100 rounded-lg text-xs text-stone-600 whitespace-nowrap hover:bg-stone-200">
+                <Palette size={14} /> Cover
               </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Scripture link */}
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <BookOpen size={14} className="text-stone-400" />
-            <input
-              type="text"
-              value={editScripture}
-              onChange={(e) => setEditScripture(e.target.value)}
-              placeholder="Link a scripture (e.g. Psalm 23:1)..."
-              className="flex-1 text-sm bg-transparent border-none focus:outline-none text-stone-600 placeholder-stone-300"
-            />
-          </div>
-        </div>
-
-        {/* Main text area */}
-        <textarea
-          ref={textareaRef}
-          value={editText}
-          onChange={(e) => setEditText(e.target.value)}
-          placeholder="Pour out your heart before the Lord..."
-          className="flex-1 min-h-[200px] w-full p-4 bg-white border border-stone-200 rounded-xl text-stone-700 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none font-serif leading-relaxed shadow-sm"
-        />
-
-        {/* Tags */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-2">
-            <Tag size={14} className="text-stone-400" />
-            <p className="text-xs font-bold text-stone-400 uppercase tracking-wider">Tags</p>
-          </div>
-          <div className="flex flex-wrap gap-2 mb-2">
-            {editTags.map(tag => (
-              <span key={tag} className="flex items-center px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                {tag}
-                <button onClick={() => removeTag(tag)} className="ml-1 hover:text-red-500"><X size={12} /></button>
-              </span>
-            ))}
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') { addTag(tagInput); e.preventDefault(); } }}
-              placeholder="Add a tag..."
-              className="flex-1 px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
-            />
-          </div>
-          <div className="flex flex-wrap gap-1 mt-2">
-            {quickTags.filter(t => !editTags.includes(t)).map(tag => (
-              <button
-                key={tag}
-                onClick={() => addTag(tag)}
-                className="px-2 py-1 text-xs text-stone-400 bg-stone-50 rounded hover:bg-stone-100 hover:text-stone-600"
-              >
-                + {tag}
+              <button onClick={() => setShowFontPicker(!showFontPicker)} className="flex items-center gap-1 px-3 py-1.5 bg-stone-100 rounded-lg text-xs text-stone-600 whitespace-nowrap hover:bg-stone-200">
+                <Type size={14} /> Font
               </button>
-            ))}
+              {PAGE_STYLES.map(ps => (
+                <button key={ps} onClick={() => setPageStyle(ps)}
+                  className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap capitalize ${pageStyle === ps ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-stone-600'}`}>
+                  {ps}
+                </button>
+              ))}
+            </div>
+            <button onClick={saveEntry} className="flex items-center gap-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium">
+              <Save size={16} /> Save
+            </button>
+          </div>
+        </div>
+
+        {/* Cover Picker */}
+        {showCoverPicker && (
+          <div className="fixed top-32 left-0 right-0 md:left-20 z-20 bg-white border-b border-stone-200 p-4 shadow-lg">
+            <div className="max-w-2xl mx-auto">
+              <div className="flex gap-2 mb-3 overflow-x-auto no-scrollbar">
+                {['all','minimal','gradient','pattern','anime','faith'].map(cat => (
+                  <button key={cat} onClick={() => setCoverCategory(cat)}
+                    className={`px-3 py-1 rounded-full text-xs capitalize whitespace-nowrap ${coverCategory === cat ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-stone-600'}`}>
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              <div className="grid grid-cols-5 gap-2 max-h-40 overflow-y-auto">
+                {filteredCovers.map(cover => (
+                  <button key={cover.id} onClick={() => { setSelectedCover(cover); setCurrentEntry(p => ({ ...p, coverStyle: cover.id })); setShowCoverPicker(false); }}
+                    className={`h-14 rounded-lg border-2 transition-transform hover:scale-105 ${selectedCover.id === cover.id ? 'border-emerald-600 scale-105' : 'border-transparent'}`}
+                    style={{ ...cover.style }}>
+                    <span className="text-xs" style={{ color: cover.textColor }}>{cover.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Font Picker */}
+        {showFontPicker && (
+          <div className="fixed top-32 left-0 right-0 md:left-20 z-20 bg-white border-b border-stone-200 p-4 shadow-lg">
+            <div className="max-w-2xl mx-auto">
+              <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto">
+                {FONT_FAMILIES.map(f => (
+                  <button key={f.name} onClick={() => { setCurrentEntry(p => ({ ...p, fontFamily: f.value })); setShowFontPicker(false); }}
+                    className={`p-2 rounded-lg border text-sm text-left ${currentEntry.fontFamily === f.value ? 'border-emerald-600 bg-emerald-50' : 'border-stone-200'}`}
+                    style={{ fontFamily: f.value }}>
+                    {f.name}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-3 flex items-center gap-3">
+                <label className="text-xs text-stone-500">Size:</label>
+                <input type="range" min="12" max="28" value={currentEntry.fontSize || 16} onChange={e => setCurrentEntry(p => ({ ...p, fontSize: parseInt(e.target.value) }))} className="flex-1" />
+                <span className="text-xs text-stone-500">{currentEntry.fontSize || 16}px</span>
+              </div>
+              <div className="mt-2 flex items-center gap-3">
+                <label className="text-xs text-stone-500">Color:</label>
+                <input type="color" value={currentEntry.textColor || '#44403c'} onChange={e => setCurrentEntry(p => ({ ...p, textColor: e.target.value }))} className="w-8 h-8 rounded cursor-pointer" />
+                <label className="text-xs text-stone-500">BG:</label>
+                <input type="color" value={currentEntry.backgroundColor || '#ffffff'} onChange={e => setCurrentEntry(p => ({ ...p, backgroundColor: e.target.value }))} className="w-8 h-8 rounded cursor-pointer" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className={`pt-28 ${showCoverPicker || showFontPicker ? 'pt-64' : 'pt-28'} px-4`}>
+          <div className="max-w-2xl mx-auto">
+            {/* Journal Cover Preview */}
+            <div className="h-32 rounded-t-2xl flex flex-col items-center justify-center relative overflow-hidden"
+              style={selectedCover.style}>
+              <input value={currentEntry.title || ''} onChange={e => setCurrentEntry(p => ({ ...p, title: e.target.value }))}
+                placeholder="Journal Title..." className="text-center bg-transparent border-none outline-none font-serif font-bold text-lg w-full px-4"
+                style={{ color: selectedCover.textColor }} />
+              <p className="text-xs mt-1" style={{ color: selectedCover.textColor, opacity: 0.8 }}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+              {/* Mood selector */}
+              <div className="absolute bottom-2 right-2">
+                <select value={currentEntry.mood || ''} onChange={e => setCurrentEntry(p => ({ ...p, mood: e.target.value }))}
+                  className="text-xs bg-transparent border-none outline-none cursor-pointer" style={{ color: selectedCover.textColor }}>
+                  <option value="">+ Mood</option>
+                  {JOURNAL_MOODS.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Writing Area */}
+            <div className={`rounded-b-2xl border border-t-0 ${isDark ? 'border-stone-700' : 'border-stone-200'} shadow-sm overflow-hidden`}
+              style={{ backgroundColor: currentEntry.backgroundColor || '#ffffff', ...getPageStyle() }}>
+              <textarea ref={textareaRef}
+                value={currentEntry.text || ''}
+                onChange={e => setCurrentEntry(p => ({ ...p, text: e.target.value }))}
+                placeholder="Begin writing your heart..."
+                className="w-full min-h-96 p-6 bg-transparent resize-none focus:outline-none"
+                style={{ fontFamily: currentEntry.fontFamily || 'Lora, serif', fontSize: `${currentEntry.fontSize || 16}px`, lineHeight: '2', color: currentEntry.textColor || '#44403c' }}
+              />
+            </div>
+
+            {/* Scripture Link */}
+            <div className={`mt-3 p-3 ${isDark ? 'bg-stone-800 border-stone-700' : 'bg-stone-50 border-stone-200'} border rounded-xl`}>
+              <input value={currentEntry.linkedScripture || ''} onChange={e => setCurrentEntry(p => ({ ...p, linkedScripture: e.target.value }))}
+                placeholder="Link a scripture (e.g., John 3:16)..."
+                className={`w-full bg-transparent text-sm focus:outline-none ${isDark ? 'text-stone-300' : 'text-stone-600'}`} />
+            </div>
+
+            {/* Tags */}
+            <div className={`mt-3 p-3 ${isDark ? 'bg-stone-800 border-stone-700' : 'bg-stone-50 border-stone-200'} border rounded-xl`}>
+              <div className="flex flex-wrap gap-2 mb-2">
+                {(currentEntry.tags || []).map(tag => (
+                  <span key={tag} className="flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs">
+                    {tag}
+                    <button onClick={() => setCurrentEntry(p => ({ ...p, tags: (p.tags || []).filter(t => t !== tag) }))}><X size={10} /></button>
+                  </span>
+                ))}
+              </div>
+              <input placeholder="Add tags (press Enter)..."
+                className={`bg-transparent text-sm focus:outline-none ${isDark ? 'text-stone-300' : 'text-stone-600'}`}
+                onKeyPress={e => {
+                  if (e.key === 'Enter') {
+                    const val = (e.target as HTMLInputElement).value.trim();
+                    if (val) { setCurrentEntry(p => ({ ...p, tags: [...(p.tags || []), val] })); (e.target as HTMLInputElement).value = ''; }
+                  }
+                }} />
+            </div>
+
+            {/* AI Writing Assistant */}
+            <div className={`mt-3 p-4 ${isDark ? 'bg-stone-800 border-stone-700' : 'bg-emerald-50 border-emerald-200'} border rounded-xl`}>
+              <p className="text-xs font-bold text-emerald-700 mb-2">AI Writing Companion</p>
+              <div className="flex gap-2">
+                <input value={aiPrompt} onChange={e => setAiPrompt(e.target.value)}
+                  placeholder="Ask AI to help (e.g., 'reflect on forgiveness')..."
+                  className={`flex-1 bg-white border border-emerald-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400`}
+                  onKeyPress={e => e.key === 'Enter' && generateWithAI()} />
+                <button onClick={generateWithAI} disabled={isGenerating}
+                  className="px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm disabled:opacity-50">
+                  {isGenerating ? '...' : 'Ask'}
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1 mt-2">
+                {['reflect on today', 'prayer for peace', 'gratitude list', 'what God is teaching me', 'confession and repentance'].map(p => (
+                  <button key={p} onClick={() => setAiPrompt(p)} className="text-xs text-emerald-600 bg-emerald-100 px-2 py-1 rounded-full">{p}</button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  // LIST VIEW
   return (
-    <div className="pb-24 px-4 pt-6 fade-in">
-      <div className="flex justify-between items-end mb-6">
-        <div>
-          <h1 className="text-2xl font-serif text-stone-800">Journal</h1>
-          <p className="text-sm text-stone-500">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</p>
+    <div className={`min-h-screen ${bg} pb-32 md:pl-20`}>
+      <div className="max-w-2xl mx-auto px-4 pt-4">
+        {/* Search & Filter */}
+        <div className="flex gap-2 mb-4">
+          <div className={`flex-1 flex items-center gap-2 px-3 py-2 ${isDark ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200'} border rounded-xl`}>
+            <Search size={16} className={mutedText} />
+            <input placeholder="Search journal..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              className={`flex-1 bg-transparent text-sm focus:outline-none ${textColor}`} />
+          </div>
+          <button onClick={startNewEntry} className="flex items-center gap-1 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium">
+            <Plus size={16} /> New
+          </button>
         </div>
-        <button
-          onClick={startNewEntry}
-          className="flex items-center px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark transition-colors"
-        >
-          <Plus size={16} className="mr-2" /> New Entry
-        </button>
-      </div>
 
-      {/* Quote */}
-      <div className="bg-white p-5 rounded-xl shadow-sm border border-stone-200 mb-6">
-        <p className="text-stone-500 font-serif italic text-center text-sm">
-          "Journaling is a way of listening to the life God has given you."
-        </p>
-      </div>
+        {/* Tags Filter */}
+        {allTags.length > 0 && (
+          <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
+            <button onClick={() => setSelectedTag('')} className={`px-3 py-1 rounded-full text-xs whitespace-nowrap ${!selectedTag ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-stone-600'}`}>All</button>
+            {allTags.map(tag => (
+              <button key={tag} onClick={() => setSelectedTag(tag === selectedTag ? '' : tag)}
+                className={`px-3 py-1 rounded-full text-xs whitespace-nowrap ${selectedTag === tag ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-stone-600'}`}>{tag}</button>
+            ))}
+          </div>
+        )}
 
-      {/* Search */}
-      {entries.length > 0 && (
-        <div className="relative mb-6">
-          <input
-            type="text"
-            placeholder="Search your journal..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-          />
-          <Search className="absolute left-3 top-2.5 text-stone-400" size={18} />
-        </div>
-      )}
-
-      {/* Stats */}
-      {entries.length > 0 && (
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-white p-3 rounded-lg border border-stone-200 text-center">
-            <div className="text-xl font-bold text-primary">{entries.length}</div>
-            <div className="text-xs text-stone-500">Entries</div>
+        {filteredEntries.length === 0 ? (
+          <div className="text-center py-20">
+            <PenLine size={48} className={`${mutedText} mx-auto mb-4`} />
+            <h3 className={`font-serif text-xl font-bold ${textColor} mb-2`}>Your Journal Awaits</h3>
+            <p className={`text-sm ${mutedText} mb-6`}>Record your walk of faith, prayers, and reflections.</p>
+            <button onClick={startNewEntry} className="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-medium">Begin Your First Entry</button>
           </div>
-          <div className="bg-white p-3 rounded-lg border border-stone-200 text-center">
-            <div className="text-xl font-bold text-primary">
-              {entries.filter(e => {
-                const d = new Date(e.date);
-                const now = new Date();
-                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-              }).length}
-            </div>
-            <div className="text-xs text-stone-500">This Month</div>
-          </div>
-          <div className="bg-white p-3 rounded-lg border border-stone-200 text-center">
-            <div className="text-xl font-bold text-primary">
-              {entries.reduce((acc, e) => acc + e.text.split(/\s+/).length, 0)}
-            </div>
-            <div className="text-xs text-stone-500">Words</div>
-          </div>
-        </div>
-      )}
-
-      {/* Entries List */}
-      <div className="space-y-3">
-        {filteredEntries.length === 0 && entries.length === 0 ? (
-          <div className="text-center py-12">
-            <PenLine className="mx-auto mb-4 text-stone-300" size={48} />
-            <p className="text-stone-500 font-serif mb-2">No journal entries yet</p>
-            <p className="text-sm text-stone-400 mb-4">Start writing to capture your walk with God</p>
-            <button
-              onClick={startNewEntry}
-              className="px-6 py-2 bg-primary text-white rounded-lg text-sm font-medium"
-            >
-              Write Your First Entry
-            </button>
-          </div>
-        ) : filteredEntries.length === 0 ? (
-          <p className="text-center text-stone-400 py-8">No entries match your search</p>
         ) : (
-          filteredEntries.map(entry => (
-            <div
-              key={entry.id}
-              className="bg-white p-4 rounded-xl border border-stone-200 hover:border-primary/50 transition-all cursor-pointer group"
-              onClick={() => editExistingEntry(entry)}
-            >
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-serif font-bold text-stone-700 truncate">{entry.title}</h3>
-                  <div className="flex items-center gap-2 text-xs text-stone-400 mt-1">
-                    <span>{formatDate(entry.date)}</span>
-                    {entry.mood && <span className="px-2 py-0.5 bg-primary/10 text-primary rounded">{entry.mood}</span>}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredEntries.map(entry => {
+              const cover = JOURNAL_COVERS.find(c => c.id === entry.coverStyle) || JOURNAL_COVERS[0];
+              return (
+                <div key={entry.id} className={`${isDark ? 'bg-stone-800 border-stone-700' : 'bg-white border-stone-200'} border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
+                  {/* Cover */}
+                  <div className="h-20 flex items-center justify-center cursor-pointer" style={cover.style} onClick={() => editEntry(entry)}>
+                    <div className="text-center">
+                      <p className="font-serif font-bold text-sm" style={{ color: cover.textColor }}>{entry.title || 'Untitled'}</p>
+                      <p className="text-xs mt-0.5" style={{ color: cover.textColor, opacity: 0.8 }}>{new Date(entry.date).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  {/* Preview */}
+                  <div className="p-4">
+                    {entry.mood && <span className="text-xs px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full mr-2">{entry.mood}</span>}
+                    <p className={`text-sm ${textColor} mt-2 line-clamp-3`} style={{ fontFamily: entry.fontFamily }}>{entry.text}</p>
+                    {entry.linkedScripture && (
+                      <p className={`text-xs ${mutedText} mt-2 italic`}>— {entry.linkedScripture}</p>
+                    )}
+                    {entry.tags.length > 0 && (
+                      <div className="flex gap-1 mt-2 flex-wrap">
+                        {entry.tags.map(t => <span key={t} className="text-xs text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full">{t}</span>)}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-stone-100">
+                      <button onClick={() => editEntry(entry)} className={`flex-1 text-xs ${mutedText} hover:text-stone-700 text-left`}>Edit</button>
+                      <button onClick={() => shareEntry(entry)} className={`p-1.5 ${mutedText} hover:text-emerald-600`}><Share2 size={14} /></button>
+                      <button onClick={() => downloadEntry(entry, 'txt')} className={`p-1.5 ${mutedText} hover:text-emerald-600`}><Download size={14} /></button>
+                      <button onClick={() => downloadEntry(entry, 'html')} className={`p-1.5 text-xs ${mutedText} hover:text-emerald-600`}>HTML</button>
+                      <button onClick={() => deleteEntry(entry.id)} className={`p-1.5 ${mutedText} hover:text-red-500`}><Trash2 size={14} /></button>
+                    </div>
                   </div>
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); deleteEntry(entry.id); }}
-                  className="p-1.5 text-stone-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-              <p className="text-sm text-stone-600 line-clamp-2 font-serif">{entry.text}</p>
-              {entry.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {entry.tags.map(tag => (
-                    <span key={tag} className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded">{tag}</span>
-                  ))}
-                </div>
-              )}
-              {entry.linkedScripture && (
-                <div className="flex items-center gap-1 mt-2 text-xs text-primary">
-                  <BookOpen size={12} /> {entry.linkedScripture}
-                </div>
-              )}
-            </div>
-          ))
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

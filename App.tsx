@@ -13,6 +13,9 @@ import DevotionalTab from './components/views/DevotionalTab';
 import PrayerTab from './components/views/PrayerTab';
 import JournalTab from './components/views/JournalTab';
 import WorshipMusicTab from './components/views/WorshipMusicTab';
+import VerseImageTab from './components/views/VerseImageTab';
+import HighlightsTab from './components/views/HighlightsTab';
+import HodouTab from './components/views/HodouTab';
 import { StudyTab, PlansTab, TopicsTab, SavedTab } from './components/views/LibraryTabs';
 import { SearchTab, ProfileTab, SettingsTab } from './components/views/SystemTabs';
 
@@ -151,6 +154,9 @@ const App: React.FC = () => {
       case Tab.PLANS: return <PlansTab />;
       case Tab.TOPICS: return <TopicsTab />;
       case Tab.SEARCH: return <SearchTab />;
+      case Tab.HIGHLIGHTS: return <HighlightsTab />;
+      case Tab.VERSE_IMAGE: return <VerseImageTab />;
+      case Tab.HODOU: return <HodouTab />;
       case Tab.SAVED: return <SavedTab />;
       case Tab.PROFILE: return <ProfileTab />;
       case Tab.SETTINGS: return <SettingsTab />;
@@ -175,11 +181,18 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-stone-50/50 flex flex-col font-sans selection:bg-primary/20 selection:text-stone-900">
-      <div className="container max-w-md mx-auto flex-grow bg-white min-h-screen shadow-2xl overflow-hidden relative">
+      <div className="flex w-full max-w-5xl mx-auto flex-grow bg-white min-h-screen shadow-2xl overflow-hidden relative">
         
+        {/* Desktop sidebar navigation */}
+        <div className="hidden md:block">
+          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+        </div>
+
+        {/* Main content area */}
+        <div className="flex flex-col flex-1 min-w-0 relative">
         {activeTab === Tab.HOME && <Header onReset={() => loadDailyContent(true)} />}
         
-        <main className="w-full h-full">
+        <main className="w-full flex-1 overflow-y-auto">
           {appState === AppState.ERROR ? (
             <div className="text-center py-20 px-6">
               <p className="text-stone-500 mb-4">The path is momentarily obscured.</p>
@@ -190,7 +203,11 @@ const App: React.FC = () => {
           )}
         </main>
 
-        <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+        {/* Mobile navigation */}
+        <div className="block md:hidden">
+          <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
+        </div>
+        </div>
       </div>
     </div>
   );

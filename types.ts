@@ -19,9 +19,40 @@ export interface JournalEntry {
   text: string;
   tags: string[];
   linkedScripture?: string;
+  mood?: string;
+  coverStyle?: string;
+  fontFamily?: string;
+  fontSize?: number;
+  textColor?: string;
+  backgroundColor?: string;
 }
 
-export type PrayerCategory = 'Personal' | 'Family' | 'Church' | 'Work' | 'Nation' | 'World';
+export interface Highlight {
+  id: string;
+  verseRef: string;
+  text: string;
+  color: string;
+  note?: string;
+  dateAdded: string;
+  book: string;
+  chapter: number;
+  verse: number;
+  version: string;
+}
+
+export interface SavedBookmark {
+  id: string;
+  book: string;
+  chapter: number;
+  verse?: number;
+  version: string;
+  note?: string;
+  dateAdded: string;
+  label?: string;
+  color?: string;
+}
+
+export type PrayerCategory = 'Personal' | 'Family' | 'Church' | 'Work' | 'Nation' | 'World' | 'Healing' | 'Guidance' | 'Gratitude' | 'Intercession';
 
 export interface PrayerRequest {
   id: string;
@@ -32,6 +63,8 @@ export interface PrayerRequest {
   dateAdded: string;
   dateAnswered?: string;
   linkedVerse?: string;
+  tags?: string[];
+  priority?: 'low' | 'medium' | 'high';
 }
 
 export interface PrayerSession {
@@ -39,10 +72,10 @@ export interface PrayerSession {
   date: string;
   content: string;
   durationSeconds: number;
+  type?: string;
 }
 
 export interface PrayerItem {
-  // Deprecated in favor of PrayerRequest, keeping for backwards compatibility if needed
   id: string;
   text: string;
   category: string;
@@ -55,6 +88,7 @@ export interface BibleVerse {
   chapter: number;
   verse: number;
   text: string;
+  version?: string;
 }
 
 export interface BibleContext {
@@ -73,11 +107,70 @@ export interface BibleBookDef {
   category: BibleBookCategory;
   chapters: number;
   testament: 'OT' | 'NT';
+  abbr?: string;
 }
 
-export type ReadingMode = 'normal' | 'verse-by-verse' | 'reader' | 'study';
+export type ReadingMode = 'normal' | 'verse-by-verse' | 'reader' | 'study' | 'parallel' | 'interlinear';
 
-// --- HOME DASHBOARD SPECIFIC TYPES ---
+export interface BibleVersion {
+  id: string;
+  name: string;
+  abbreviation: string;
+  language: string;
+  languageCode: string;
+  year?: number;
+  publisher?: string;
+  type?: 'formal' | 'dynamic' | 'paraphrase' | 'literal';
+  region?: string;
+}
+
+export interface WorshipSong {
+  id: string;
+  title: string;
+  artist: string;
+  album?: string;
+  year?: number;
+  lyrics?: string;
+  youtubeId?: string;
+  genre?: string;
+  tags?: string[];
+  language?: string;
+}
+
+export interface VerseImageData {
+  id: string;
+  verseRef: string;
+  verseText: string;
+  backgroundStyle: string;
+  fontFamily: string;
+  fontSize: number;
+  textColor: string;
+  overlayColor?: string;
+  width: number;
+  height: number;
+  dateCreated: string;
+}
+
+export interface StudyNote {
+  id: string;
+  verseRef: string;
+  book: string;
+  chapter: number;
+  verse: number;
+  text: string;
+  type: 'observation' | 'interpretation' | 'application' | 'question';
+  dateAdded: string;
+}
+
+export interface ReadingPlan {
+  id: string;
+  title: string;
+  description: string;
+  duration: number;
+  progress: number;
+  passages: string[];
+  category?: string;
+}
 
 export interface HomeSectionVerse {
   text: string;
@@ -89,7 +182,7 @@ export interface HomeSectionVerse {
 
 export interface HomeSectionPassage {
   reference: string;
-  text: string; // Multi-paragraph
+  text: string;
   outline: string[];
   author: string;
   historicalSetting: string;
@@ -167,6 +260,9 @@ export enum Tab {
   TOPICS = 'TOPICS',
   SEARCH = 'SEARCH',
   SAVED = 'SAVED',
+  HIGHLIGHTS = 'HIGHLIGHTS',
+  VERSE_IMAGE = 'VERSE_IMAGE',
+  HODOU = 'HODOU',
   PROFILE = 'PROFILE',
   SETTINGS = 'SETTINGS',
 }
@@ -175,4 +271,19 @@ export enum AppState {
   LOADING = 'LOADING',
   READY = 'READY',
   ERROR = 'ERROR',
+}
+
+export interface AppSettings {
+  theme: 'light' | 'dark' | 'sepia' | 'forest' | 'ocean';
+  fontSize: number;
+  fontFamily: string;
+  defaultBibleVersion: string;
+  language: string;
+  animationsEnabled: boolean;
+  footstepAnimation: boolean;
+  showVerseNumbers: boolean;
+  dyslexiaFriendly: boolean;
+  highContrast: boolean;
+  largeText: boolean;
+  parallelVersion?: string;
 }
