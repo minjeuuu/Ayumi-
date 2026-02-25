@@ -22,7 +22,6 @@ import { SearchTab, ProfileTab, SettingsTab } from './components/views/SystemTab
 const STORAGE_KEY_CONTENT = 'ayumi_home_dashboard_v2';
 const STORAGE_KEY_DATE = 'ayumi_last_fetch_date';
 
-// Instant fallback content so app never blocks
 const INSTANT_FALLBACK: HomeDashboardContent = {
   date: new Date().toISOString(),
   verse: {
@@ -93,80 +92,65 @@ const App: React.FC = () => {
 
   // Load theme from settings
   useEffect(() => {
-    const settings = localStorage.getItem('ayumi_app_settings');
-    if (settings) {
-      try {
-        const parsed = JSON.parse(settings);
-        if (parsed.theme) setTheme(parsed.theme);
-      } catch {}
-    }
-    // Listen for storage changes (settings updates)
-    const handleStorage = () => {
-      const s = localStorage.getItem('ayumi_app_settings');
-      if (s) {
-        try { const p = JSON.parse(s); if (p.theme) setTheme(p.theme); } catch {}
+    const loadTheme = () => {
+      const settings = localStorage.getItem('ayumi_app_settings');
+      if (settings) {
+        try { const p = JSON.parse(settings); if (p.theme) setTheme(p.theme); } catch {}
       }
     };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    loadTheme();
+    window.addEventListener('storage', loadTheme);
+    return () => window.removeEventListener('storage', loadTheme);
   }, []);
 
   const getTodayString = () => new Date().toISOString().split('T')[0];
 
   const loadDailyContent = useCallback(async (forceRefresh = false) => {
     const today = getTodayString();
-    
     try {
-      // Check localStorage first for instant loading
       const cachedContent = localStorage.getItem(STORAGE_KEY_CONTENT);
       const lastDate = localStorage.getItem(STORAGE_KEY_DATE);
-
       if (!forceRefresh && cachedContent && lastDate === today) {
         setContent(JSON.parse(cachedContent));
         setAppState(AppState.READY);
         return;
       }
-
-      // Show instant fallback while fetching
-      if (!content) {
-        setContent(INSTANT_FALLBACK);
-        setAppState(AppState.READY);
-      }
-
-      // Fetch fresh content in background
+      if (!content) { setContent(INSTANT_FALLBACK); setAppState(AppState.READY); }
       const newContent = await generateHomeDashboard();
-      
       localStorage.setItem(STORAGE_KEY_CONTENT, JSON.stringify(newContent));
       localStorage.setItem(STORAGE_KEY_DATE, today);
-      
       setContent(newContent);
       setAppState(AppState.READY);
     } catch (error) {
       console.error("Failed to load dashboard", error);
-      // Even on error, show fallback instead of error screen
-      if (!content) {
-        setContent(INSTANT_FALLBACK);
-        setAppState(AppState.READY);
-      }
+      if (!content) { setContent(INSTANT_FALLBACK); setAppState(AppState.READY); }
     }
   }, []);
 
+  useEffect(() => { loadDailyContent(); }, []);
+
   useEffect(() => {
-    loadDailyContent();
-  }, []);
+    if (appState === AppState.LOADING) {
+      const timer = setTimeout(() => {
+        setContent(INSTANT_FALLBACK);
+        setAppState(AppState.READY);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [appState]);
 
   const renderContent = () => {
     switch (activeTab) {
       case Tab.HOME: return <HomeTab content={content} onNavigate={setActiveTab} />;
       case Tab.READ: return <ReadTab />;
-      case Tab.DEVOTIONAL: 
+      case Tab.DEVOTIONAL:
         return <DevotionalTab initialContent={content ? {
-            title: content.devotional.title,
-            scripture: { text: content.devotional.scriptureQuote, reference: "Daily Verse" },
-            reflection: content.devotional.longReflection,
-            prayer: content.devotional.prayerGuide,
-            stepOfFaith: content.devotional.application,
-            tags: []
+          title: content.devotional.title,
+          scripture: { text: content.devotional.scriptureQuote, reference: "Daily Verse" },
+          reflection: content.devotional.longReflection,
+          prayer: content.devotional.prayerGuide,
+          stepOfFaith: content.devotional.application,
+          tags: []
         } : null} />;
       case Tab.PRAYER: return <PrayerTab />;
       case Tab.JOURNAL: return <JournalTab />;
@@ -185,55 +169,100 @@ const App: React.FC = () => {
     }
   };
 
-  // Show loading only for max 1.5 seconds, then show fallback
-  useEffect(() => {
-    if (appState === AppState.LOADING) {
-      const timer = setTimeout(() => {
-        if (appState === AppState.LOADING) {
-          setContent(INSTANT_FALLBACK);
-          setAppState(AppState.READY);
-        }
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [appState]);
+  // Theme classes
+  const themeBg = theme === 'dark'    ? 'bg-stone-900 text-stone-100'
+               : theme === 'sepia'   ? 'bg-amber-100 text-stone-800'
+               : theme === 'forest'  ? 'bg-green-50 text-stone-800'
+               : theme === 'ocean'   ? 'bg-sky-50 text-stone-800'
+               : theme === 'midnight'? 'bg-slate-950 text-slate-100'
+               :                       'bg-stone-100 text-stone-900';
 
-  const themeClass = theme === 'dark' ? 'bg-stone-900 text-stone-100' 
-    : theme === 'sepia' ? 'bg-amber-50 text-stone-800'
-    : theme === 'forest' ? 'bg-green-50 text-stone-800'
-    : theme === 'ocean' ? 'bg-blue-50 text-stone-800'
-    : 'bg-stone-50 text-stone-900';
+  const cardBg = theme === 'dark'    ? 'bg-stone-950 border-stone-800'
+              : theme === 'sepia'   ? 'bg-amber-50 border-amber-200'
+              : theme === 'forest'  ? 'bg-green-50 border-green-200'
+              : theme === 'ocean'   ? 'bg-sky-50 border-sky-100'
+              : theme === 'midnight'? 'bg-slate-900 border-slate-800'
+              :                       'bg-white border-stone-200';
 
   if (appState === AppState.LOADING) return <LoadingScreen />;
 
   return (
-    <div className={`min-h-screen ${themeClass} flex flex-col font-sans selection:bg-primary/20`}>
-      <div className="flex w-full max-w-5xl mx-auto flex-grow bg-white min-h-screen shadow-2xl overflow-hidden relative">
-        
-        {/* Desktop sidebar navigation */}
-        <div className="hidden md:block">
-          <Navigation activeTab={activeTab} onTabChange={setActiveTab} theme={theme} />
-        </div>
+    <div className={`min-h-screen ${themeBg} font-sans`}>
+      {/* ── DESKTOP SIDEBAR ── shifted content right by sidebar width */}
+      <div className="hidden md:block">
+        <Navigation activeTab={activeTab} onTabChange={setActiveTab} theme={theme} />
+      </div>
 
-        {/* Main content area */}
-        <div className="flex flex-col flex-1 min-w-0 relative">
-        {activeTab === Tab.HOME && <Header onReset={() => loadDailyContent(true)} />}
-        
-        <main className="w-full flex-1 overflow-y-auto">
-          {appState === AppState.ERROR ? (
-            <div className="text-center py-20 px-6">
-              <p className="text-stone-500 mb-4">The path is momentarily obscured.</p>
-              <button onClick={() => loadDailyContent(true)} className="px-6 py-2 bg-stone-800 text-white rounded-full">Retry</button>
-            </div>
-          ) : (
-            renderContent()
+      {/* ── MAIN LAYOUT ─────────────────────────────── */}
+      <div className="md:pl-20 min-h-screen flex justify-center">
+        {/* The beautiful centered card */}
+        <div className={`w-full max-w-2xl ${cardBg} border-l border-r min-h-screen flex flex-col shadow-xl`}>
+
+          {/* Header — only on Home */}
+          {activeTab === Tab.HOME && (
+            <Header onReset={() => loadDailyContent(true)} theme={theme} />
           )}
-        </main>
 
-        {/* Mobile navigation */}
-        <div className="block md:hidden">
-          <Navigation activeTab={activeTab} onTabChange={setActiveTab} theme={theme} />
+          {/* Tab-specific header for non-home tabs */}
+          {activeTab !== Tab.HOME && (
+            <TabHeader activeTab={activeTab} theme={theme} />
+          )}
+
+          {/* Content area */}
+          <main className="flex-1 overflow-y-auto" style={{ paddingBottom: 88 }}>
+            {appState === AppState.ERROR ? (
+              <div className="text-center py-20 px-6">
+                <p className="text-stone-400 mb-4">The path is momentarily obscured.</p>
+                <button onClick={() => loadDailyContent(true)}
+                  className="px-6 py-2 bg-stone-800 text-white rounded-full text-sm">Retry</button>
+              </div>
+            ) : renderContent()}
+          </main>
         </div>
+      </div>
+
+      {/* ── MOBILE BOTTOM NAV ── */}
+      <div className="md:hidden">
+        <Navigation activeTab={activeTab} onTabChange={setActiveTab} theme={theme} />
+      </div>
+    </div>
+  );
+};
+
+// Sub-header for non-home tabs
+const TAB_META: Record<Tab, { en: string; ja: string; color: string }> = {
+  [Tab.HOME]:        { en: 'ayumi',       ja: 'あゆみ',         color: '#5B7C75' },
+  [Tab.READ]:        { en: 'Read',        ja: '聖書',           color: '#5B7C75' },
+  [Tab.DEVOTIONAL]:  { en: 'Devotional',  ja: '黙想',           color: '#c2610f' },
+  [Tab.PRAYER]:      { en: 'Prayer',      ja: '祈り',           color: '#be185d' },
+  [Tab.JOURNAL]:     { en: 'Journal',     ja: '日記',           color: '#7c3aed' },
+  [Tab.WORSHIP]:     { en: 'Worship',     ja: '礼拝',           color: '#0369a1' },
+  [Tab.STUDY]:       { en: 'Study',       ja: '学習',           color: '#065f46' },
+  [Tab.PLANS]:       { en: 'Plans',       ja: '計画',           color: '#92400e' },
+  [Tab.TOPICS]:      { en: 'Topics',      ja: 'トピック',        color: '#1e3a5f' },
+  [Tab.SEARCH]:      { en: 'Search',      ja: '検索',           color: '#374151' },
+  [Tab.SAVED]:       { en: 'Saved',       ja: '保存',           color: '#064e3b' },
+  [Tab.HIGHLIGHTS]:  { en: 'Highlights',  ja: 'ハイライト',      color: '#d97706' },
+  [Tab.VERSE_IMAGE]: { en: 'Verse Art',   ja: '聖句アート',      color: '#9333ea' },
+  [Tab.HODOU]:       { en: 'Hodou',       ja: 'ほどう',         color: '#0f766e' },
+  [Tab.PROFILE]:     { en: 'Profile',     ja: 'プロフィール',    color: '#374151' },
+  [Tab.SETTINGS]:    { en: 'Settings',    ja: '設定',           color: '#374151' },
+};
+
+const TabHeader: React.FC<{ activeTab: Tab; theme?: string }> = ({ activeTab, theme = 'light' }) => {
+  const isDark = theme === 'dark';
+  const isSepia = theme === 'sepia';
+  const bg = isDark ? 'bg-stone-950/95 border-stone-800' : isSepia ? 'bg-amber-50/95 border-amber-200' : 'bg-white/95 border-stone-100';
+  const meta = TAB_META[activeTab] || TAB_META[Tab.HOME];
+
+  return (
+    <div className={`sticky top-0 z-30 ${bg} border-b backdrop-blur-xl px-5 py-3`}>
+      <div className="flex items-center gap-2">
+        <div className="w-1 h-7 rounded-full" style={{ backgroundColor: meta.color }} />
+        <div>
+          <h1 className={`text-base font-bold leading-tight ${isDark ? 'text-stone-100' : 'text-stone-900'}`}
+              style={{ fontFamily: "'Lora', serif" }}>{meta.en}</h1>
+          <p className={`text-[10px] ${isDark ? 'text-stone-500' : 'text-stone-400'}`}>{meta.ja}</p>
         </div>
       </div>
     </div>
